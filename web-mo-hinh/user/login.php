@@ -16,7 +16,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         $user = $result->fetch_assoc();
         if (password_verify($password, $user['password'])) {
             $_SESSION['user'] = $user;
-            header("Location: user.php");
+            $_SESSION['username'] = $user['username'];
+            header("Location: ../index.php");
             exit;
         } else $msg = "Sai mật khẩu!";
     } else $msg = "Tài khoản không tồn tại!";

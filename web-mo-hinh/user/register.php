@@ -20,7 +20,13 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         $stmt = $conn->prepare("INSERT INTO users (username, email, password) VALUES (?, ?, ?)");
         $stmt->bind_param("sss", $username, $email, $password);
         $stmt->execute();
-        $msg = "Đăng ký thành công! Vui lòng đăng nhập.";
+        
+        // Tạo 1 session mang thông báo thành công
+        $_SESSION['register_success'] = "Đăng ký thành công! Vui lòng đăng nhập."; 
+        
+        // Chuyển hướng về trang login.php
+        header("Location: login.php");
+        exit;
     }
 }
 ?>

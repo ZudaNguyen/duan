@@ -230,20 +230,31 @@ body {
     color: #333;
 }
 
+/* ---------------
+   DANH SÁCH SẢN PHẨM (Sử dụng CSS Grid để căn chỉnh)
+   --------------- */
+
 #list-products {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: space-around;
+    display: grid; /* Đổi sang Grid */
+    /* Tạo các cột tự động vừa với chiều rộng tối thiểu 270px */
+    grid-template-columns: repeat(auto-fit, minmax(270px, 1fr)); 
+    gap: 25px; /* Khoảng cách giữa các sản phẩm */
     list-style: none;
-    gap: 20px;
+    padding: 0; /* Xóa padding mặc định của ul */
+    /* Quan trọng: Kéo dài các item trong cùng một hàng để có chiều cao bằng nhau */
+    align-items: stretch; 
 }
 
 #list-products .item {
-    width: 270px;
+    /* Bỏ width cố định, Grid sẽ tự quản lý */
     background: #362f2f;
     border-radius: 15px;
     overflow: hidden;
     transition: transform 0.3s ease, box-shadow 0.3s ease;
+    
+    /* Vẫn dùng flex để xếp nội dung bên trong item theo chiều dọc */
+    display: flex; 
+    flex-direction: column;
 }
 
 #list-products .item:hover {
@@ -251,35 +262,81 @@ body {
     box-shadow: 0 10px 20px rgba(0,0,0,0.2);
 }
 
+/* --- CSS cho các thành phần bên trong (img, name, desc, price) --- */
 #list-products .item img {
     width: 100%;
-    height: 200px;
+    height: 200px; /* Giữ chiều cao cố định cho ảnh */
     object-fit: cover;
-    border-radius: 12px 12px 0 0;
 }
 
 #list-products .item .name {
     text-align: center;
     color: #fff;
     font-weight: bold;
-    margin: 10px 0 5px 0;
-    font-size: 18px;
+    margin: 10px 15px 5px 15px; /* Thêm padding ngang */
+    font-size: 1rem; /* Có thể chỉnh lại size */
+    text-decoration: none;
+    /* Giới hạn tên sản phẩm trong 2 dòng nếu quá dài */
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;  
+    overflow: hidden;
+    min-height: 2.4em; /* Đảm bảo tên luôn chiếm ít nhất 2 dòng chiều cao */
+}
+#list-products .item .name:hover {
+    color: orange;
 }
 
 #list-products .item .desc {
     text-align: center;
     color: #ccc;
-    font-size: 14px;
-    padding: 0 10px;
+    font-size: 0.85rem; /* Chỉnh nhỏ lại */
+    padding: 0 15px;
     margin-bottom: 10px;
+    /* Giới hạn mô tả trong 3 dòng nếu quá dài */
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;  
+    overflow: hidden;
+    min-height: 3.6em; /* Đảm bảo mô tả luôn chiếm ít nhất 3 dòng chiều cao */
 }
 
 #list-products .item .price {
     text-align: center;
     color: #f42424;
     font-weight: bold;
-    font-size: 16px;
-    margin-bottom: 15px;
+    font-size: 1.1rem; /* Chỉnh lớn hơn chút */
+    margin-bottom: 10px; /* Giảm margin dưới */
+}
+
+/* --- Form và Nút bấm --- */
+
+/* Quan trọng: Đẩy form chứa nút xuống dưới cùng */
+#list-products .item form.form-add-to-cart-index {
+    margin-top: auto; /* Đẩy form xuống đáy */
+    width: 100%;     
+}
+
+.btn-add-cart {
+    width: calc(100% - 30px); /* Chiều rộng trừ đi padding 2 bên */
+    margin: 0 auto 15px auto; /* Căn giữa, cách đáy 15px */
+    padding: 10px;
+    background: #ff9900;
+    color: #000;
+    border: none;
+    border-radius: 50px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px; 
+    font-size: 0.9rem;
+}
+.btn-add-cart:hover {
+    background: #ffac33;
+    transform: scale(1.05);
 }
 
 /* ---------------- Phân trang ---------------- */
@@ -711,6 +768,47 @@ ul#tabs-nav li.active {
     background: #ffb74d;
 }
 
+/* ---------------
+   NÚT THÊM VÀO GIỎ (Cho trang index)
+   --------------- */
 
+#list-products .item {
+    display: flex;
+    flex-direction: column;
+}
+#list-products .item .name {
+    text-decoration: none;
+}
+#list-products .item .name:hover {
+    color: orange; /* Giống menu */
+}
+
+#list_products .item form.form-add-to-cart-index {
+    margin-top: auto;
+    width: 100%;
+}
+
+.btn-add-cart {
+    width: 90%;
+    margin: 10px auto 15px auto;
+    padding: 10px;
+    background: #ff9900;
+    color: #000;
+    border: none;
+    border-radius: 50px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px; /* Khoảng cách giữa icon và chữ */
+    font-size: 0.9rem; /* Chỉnh cỡ chữ */
+}
+
+.btn-add-cart:hover {
+    background: #ffac33;
+    transform: scale(1.05);
+}
 
 

@@ -52,7 +52,6 @@ html { scroll-behavior: smooth; }
 <body>
 <div id="wrapper">
 
-    <!-- Header -->
     <header id="header">
         <div class="logo">
             <a href="index.php">
@@ -78,19 +77,18 @@ html { scroll-behavior: smooth; }
 
         <div id="actions">
             <div class="item">
-                <a href="<?php echo isset($_SESSION['username']) ? 'user.php' : 'user/login.php'; ?>">
-                    <img src="./assets/img/user.jpg" alt="Tài khoản">
-                </a>
-            </div>
-            <div class="item">
-                <a href="<?php echo isset($_SESSION['username']) ? 'cart.php' : 'user/login.php'; ?>">
-                    <img src="./assets/img/cart.jpg" alt="Giỏ hàng">
-                </a>
-            </div>
+                <a href="<?php echo isset($_SESSION['username']) ? 'user/user.php' : 'user/login.php'; ?>">
+            <img src="./assets/img/user.jpg" alt="Tài khoản">
+        </a>
         </div>
+            <div class="item">
+                   <a href="<?php echo isset($_SESSION['username']) ? 'cart.php' : 'user/login.php'; ?>">
+            <img src="./assets/img/cart.jpg" alt="Giỏ hàng">
+        </a>
+    </div>
+</div>
     </header>
 
-    <!-- Banner -->
     <section id="banner">
         <div class="box-left">
             <h2><span>MÔ HÌNH</span><br><span>XE ĐUA</span></h2>
@@ -103,7 +101,6 @@ html { scroll-behavior: smooth; }
         </div>
     </section>
 
-    <!-- Danh sách sản phẩm -->
     <section id="wp-products">
         <h2>SẢN PHẨM</h2>
 
@@ -111,21 +108,33 @@ html { scroll-behavior: smooth; }
             <p style="text-align:center;">Kết quả tìm kiếm cho: <strong><?php echo htmlspecialchars($tukhoa); ?></strong></p>
         <?php endif; ?>
 
-        <ul id="list-products">
-            <?php foreach($displayProducts as $index => $p): ?>
-                <li class="item">
-                    <a href="product.php?id=<?php echo $startIndex + $index; ?>" style="text-decoration:none; color:inherit;">
-                        <img src="./assets/img/<?php echo $p['img']; ?>" alt="<?php echo $p['name']; ?>">
-                        <div class="name"><?php echo $p['name']; ?></div>
-                        <div class="desc"><?php echo $p['desc']; ?></div>
-                        <div class="price"><?php echo $p['price']; ?></div>
-                    </a>
-                </li>
-            <?php endforeach; ?>
-        </ul>
+<ul id="list-products">
+    <?php foreach($displayProducts as $index => $p): ?>
+        <li class="item">
+            <a href="product.php?id=<?php echo $startIndex + $index; ?>">
+                <img src="./assets/img/<?php echo $p['img']; ?>" alt="<?php echo $p['name']; ?>">
+            </a>
+            
+            <a href="product.php?id=<?php echo $startIndex + $index; ?>" class="name"><?php echo $p['name']; ?></a>
+            <div class="desc"><?php echo $p['desc']; ?></div>
+            <div class="price"><?php echo $p['price']; ?></div>
+            
+            <form method="POST" action="add_to_cart.php" class="form-add-to-cart-index">
+                <input type="hidden" name="product_id" value="<?php echo $startIndex + $index; // Dùng ID duy nhất ?>">
+                <input type="hidden" name="product_name" value="<?php echo htmlspecialchars($p['name']); ?>">
+                <input type="hidden" name="product_price" value="<?php echo $p['price']; ?>">
+                <input type="hidden" name="product_img" value="<?php echo $p['img']; ?>">
+                
+                <button type="submit" name="add_to_cart" class="btn-add-cart">
+                    <i class="fas fa-cart-plus"></i> Thêm vào giỏ
+                </button>
 
-        <!-- Phân trang -->
-        <div class="list-page">
+                <div class="add-to-cart-message-index" style="display:none; color: green; text-align:center; padding-top: 5px; font-size: 0.9rem;"></div>
+            </form>
+        </li>
+    <?php endforeach; ?>
+</ul>
+<div class="list-page">
             <?php for($i=1; $i<=$totalPages; $i++): ?>
                 <div class="item">
                     <a href="?<?php echo !empty($tukhoa) ? "timkiem=1&tukhoa=".urlencode($tukhoa)."&" : ""; ?>page=<?php echo $i; ?>"><?php echo $i; ?></a>
@@ -133,7 +142,6 @@ html { scroll-behavior: smooth; }
             <?php endfor; ?>
         </div>
 
-        <!-- Sale & Support -->
         <div id="saleoff">
             <div class="box-left">
                 <h1><span>GIẢM GIÁ LÊN ĐẾN</span><span>45%</span></h1>
@@ -169,9 +177,9 @@ html { scroll-behavior: smooth; }
     </section>
 </div>
 
-<!-- JS animation cho #saleoff -->
 <script>
 document.addEventListener("DOMContentLoaded", function() {
+    // Code animation cho #saleoff (Giữ nguyên)
     const leftBox = document.querySelector("#saleoff .box-left");
     const rightBox = document.querySelector("#saleoff .box-right");
 
@@ -195,6 +203,51 @@ document.addEventListener("DOMContentLoaded", function() {
     }, { threshold: 0.3 });
 
     observer.observe(document.querySelector("#saleoff"));
+
+    // --- CODE AJAX MỚI THÊM VÀO ---
+    const allForms = document.querySelectorAll('.form-add-to-cart-index');
+    
+    allForms.forEach(form => {
+        form.addEventListener('submit', function(event) {
+            // 1. Ngăn trang tải lại
+            event.preventDefault(); 
+
+            // 2. Lấy dữ liệu form này
+            const formData = new FormData(form);
+            formData.append('add_to_cart', '')
+            const messageDiv = form.querySelector('.add-to-cart-message-index');
+
+            // 3. Gửi dữ liệu ngầm (AJAX)
+            fetch('add_to_cart.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                // 4. Hiển thị thông báo
+                if (data.success) {
+                    messageDiv.textContent = data.message;
+                    messageDiv.style.color = 'green';
+                } else {
+                    messageDiv.textContent = data.message;
+                    messageDiv.style.color = 'red';
+                }
+                messageDiv.style.display = 'block';
+
+                // 5. Ẩn thông báo sau 3 giây
+                setTimeout(() => {
+                    messageDiv.style.display = 'none';
+                }, 3000);
+            })
+            .catch(error => {
+                console.error('Lỗi:', error);
+                messageDiv.textContent = 'Có lỗi, thử lại.';
+                messageDiv.style.color = 'red';
+                messageDiv.style.display = 'block';
+            });
+        });
+    });
+    
 });
 </script>
 </body>

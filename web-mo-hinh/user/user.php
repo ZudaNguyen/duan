@@ -1,6 +1,6 @@
 <?php
 session_start();
-include 'connect.php';
+include '../db/connect.php';
 
 if (!isset($_SESSION['username'])) {
     header("Location: login.php");
@@ -68,31 +68,157 @@ $order_result = $order_stmt->get_result();
 <title>Trang người dùng</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
 <style>
+
+
 body {
-    background: #f4f6f8;
+    /* Nền màu xám than/nhựa đường */
+    background-color: #1c1c1c; 
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    color: #e0e0e0; /* Màu chữ xám nhạt */
 }
+
+/* Khung chính chứa thông tin (Giống tấm ốp Carbon) */
 .container-user {
     max-width: 1100px;
-    margin: 50px auto;
-    background: #fff;
-    padding: 40px;
+    margin: 40px auto;
+    background: #2a2a2a; /* Nền xám đen */
+    padding: 30px 40px;
     border-radius: 15px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5); /* Đổ bóng mạnh hơn */
+    border: 1px solid #444; /* Viền xám */
 }
-h2 {
-    color: #333;
+
+/* Tiêu đề "Xin chào..." */
+.container-user h2 {
+    color: #ffffff; /* Chữ trắng */
+    font-weight: 700;
+    text-align: center;
+    margin-bottom: 25px;
+}
+
+/* Tiêu đề phụ "Thông tin cá nhân", "Lịch sử..." */
+.container-user h4 {
+    color: #ff9900; /* Màu cam thương hiệu */
+    font-weight: 600;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #555; /* Đường kẻ viền */
+}
+
+hr {
+    margin: 30px 0;
+    border-color: #444; /* Viền mờ */
+}
+
+/* --- Form (Thông tin & Mật khẩu) --- */
+
+.form-label {
+    font-weight: 500;
+    color: #bbb; /* Chữ xám nhạt */
+    margin-bottom: 8px;
+}
+
+/* Ô nhập liệu */
+.form-control {
+    background-color: #1a1a1a; /* Nền đen */
+    border: 1px solid #555; /* Viền xám */
+    border-radius: 8px;
+    padding: 10px 12px;
+    color: #f0f0f0; /* Chữ trắng khi gõ */
+    transition: all 0.3s ease;
+}
+.form-control::placeholder {
+    color: #777;
+}
+
+/* Khi bấm vào ô nhập liệu */
+.form-control:focus {
+    background-color: #222;
+    border-color: #ff9900; /* Viền cam */
+    box-shadow: 0 0 0 3px rgba(255, 153, 0, 0.4); /* Sáng viền cam */
+    color: #f0f0f0;
+}
+
+/* --- Nút bấm (Ghi đè Bootstrap) --- */
+.btn {
+    border-radius: 50px;
+    padding: 10px 20px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    border: none;
+}
+.btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+/* Nút Cập nhật thông tin (Màu cam) */
+.btn-primary {
+    background-color: #ff9900;
+    color: #000; /* Chữ đen */
+}
+.btn-primary:hover {
+    background-color: #ffac33;
+    color: #000;
+}
+
+/* Nút Đổi mật khẩu (Màu đỏ cảnh báo) */
+.btn-warning {
+    background-color: #ff9900; /* Màu đỏ đua */
+    color: #fff;
+}
+.btn-warning:hover {
+    background-color: #ffac33;
+    color: #fff;
+}
+
+/* Nút Đăng xuất (Màu xám) */
+.btn-secondary {
+    background-color: #777;
+    color: #fff;
+}
+.btn-secondary:hover {
+    background-color: #f02d4d;
+}
+
+
+/* --- Bảng lịch sử đơn hàng --- */
+.table-responsive {
+    margin-top: 15px;
+}
+.table {
+    border-collapse: separate;
+    border-spacing: 0 8px; /* Khoảng cách giữa các hàng */
+}
+
+.table th,
+.table td {
+    border: none;
+    vertical-align: middle;
+    padding: 12px 15px;
+}
+
+/* Tiêu đề bảng */
+.table th {
+    background-color: #111; /* Nền đen tuyền */
+    color: #fff;
     font-weight: 600;
 }
-hr {
-    margin: 20px 0;
+.table th:first-child { border-radius: 8px 0 0 8px; }
+.table th:last-child { border-radius: 0 8px 8px 0; }
+
+/* Các hàng trong bảng */
+.table tbody tr {
+    background-color: #333; /* Nền xám đậm cho từng hàng */
+    transition: all 0.2s ease;
 }
-.form-control:focus {
-    box-shadow: 0 0 5px rgba(0,123,255,0.5);
+.table tbody tr:hover {
+    background-color: #3a3a3a;
+    /* Viền cam khi rê chuột */
+    outline: 1px solid #ff9900; 
 }
-.table th {
-    background-color: #007bff;
-    color: white;
-}
+.table tbody tr td:first-child { border-radius: 8px 0 0 8px; }
+.table tbody tr td:last-child { border-radius: 0 8px 8px 0; }
 </style>
 </head>
 <body>

@@ -1,8 +1,12 @@
 <?php
 // product.php
+
+// Thêm session_start() ở đầu để kiểm tra đăng nhập (nếu cần)
+session_start(); 
+
 $title = "Chi tiết sản phẩm";
 
-// Danh sách 8 sản phẩm với thông số, bảo hành, đánh giá riêng
+// Danh sách 8 sản phẩm với thông số, bảo hành, đánh giá riêng (GIỮ NGUYÊN)
 $products = [
     [
         "img"=>"lambor.jpg",
@@ -46,7 +50,7 @@ $products = [
         "desc"=>"Mô hình xe Mercedes-AMG W14 E Performance 1:43 của BBURAGO là sự kết hợp tinh tế giữa thiết kế xe đua hiện đại và nghệ thuật chế tác mô hình. Mercedes-AMG W14 E Performance là mẫu xe đua công thức 1 mang đậm dấu ấn công nghệ tiên tiến của đội đua Mercedes-AMG Petronas Formula One Team, được ra mắt trong mùa giải 2023. Với những cải tiến vượt bậc về khí động học, động cơ hybrid mạnh mẽ và thiết kế nổi bật, W14 không chỉ là biểu tượng của tốc độ mà còn đại diện cho tinh thần đổi mới không ngừng trong ngành đua xe thể thao.",
         "price"=>"1.849.000đ",
         "specs"=>"Mô hình Mercedes F1 2016 W007 Hybrid 1:18 Bburago | Kích thước: 25×10×8 cm | Chất liệu: Kim loại + Nhựa | Chi tiết nội thất đầy đủ | Trọng lượng: 1kg",
-        "warranty"=>"Bảo hành 6 tháng, hỗ trợ sửa chữa hoặc đổi mới nếu lỗi kỹ thuật.",
+        "warranty"=>"Bảo hành 6 tháng đối với lỗi kỹ thuật, hỗ trợ đổi mới sản phẩm lỗi từ nhà sản xuất.",
         "reviews"=>"★★★★★ – Chi tiết tuyệt vời, màu sắc chính xác, cửa mở được; phù hợp để trưng bày sưu tầm."
     ],
     [
@@ -55,7 +59,7 @@ $products = [
         "desc"=>"Mô hình xe Mercedes-AMG W14 E Performance 1:43 của BBURAGO là sự kết hợp tinh tế giữa thiết kế xe đua hiện đại và nghệ thuật chế tác mô hình. Mercedes-AMG W14 E Performance là mẫu xe đua công thức 1 mang đậm dấu ấn công nghệ tiên tiến của đội đua Mercedes-AMG Petronas Formula One Team, được ra mắt trong mùa giải 2023. Với những cải tiến vượt bậc về khí động học, động cơ hybrid mạnh mẽ và thiết kế nổi bật, W14 không chỉ là biểu tượng của tốc độ mà còn đại diện cho tinh thần đổi mới không ngừng trong ngành đua xe thể thao.",
         "price"=>"479.000đ",
         "specs"=>"Mô hình Mercedes-AMG W14 E Performance 1:43 BBURAGO | Kích thước: 11×5×4 cm | Chất liệu: Kim loại + Nhựa | Bánh xe: Cao su | Trọng lượng: 350g",
-        "warranty"=>"Bảo hành 3 tháng đối với lỗi kỹ thuật từ nhà sản xuất.",
+        "warranty"=>"Bảo hành 6 tháng đối với lỗi kỹ thuật, hỗ trợ đổi mới sản phẩm lỗi từ nhà sản xuất.",
         "reviews"=>"★★★★☆ – Mô hình chi tiết, sơn bóng đẹp; tỉ lệ 1:43 chính xác, đáng giá tiền."
     ],
     [
@@ -77,6 +81,7 @@ $products = [
         "reviews"=>"★★★★★ – Mô hình quân sự chi tiết, chắc chắn, cửa mở được; phù hợp trưng bày sưu tầm."
     ]
 ];
+// (Kết thúc danh sách sản phẩm)
 
 // Lấy ID sản phẩm từ URL
 $id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
@@ -93,26 +98,42 @@ $product = $products[$id];
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title><?php echo $product['name']; ?></title>
 <link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
 <div id="wrapper">
 
-    <!-- Header -->
     <header id="header">
         <div class="logo">
             <a href="index.php"><img src="./assets/img/logo.jpg" alt="Logo"></a>
         </div>
         <nav id="menu">
             <?php
-            $menu = ["Trang chủ"=>"index.php","Sản phẩm"=>"sanpham.php","Liên hệ"=>"lienhe.php"];
+            $menu = [
+                "Trang chủ"=>"index.php",
+                "Sản phẩm"=>"index.php#wp-products",
+                "Liên hệ"=>"index.php#saleoff"
+            ];
             foreach($menu as $name=>$link) {
                 echo '<div class="item"><a href="'.$link.'">'.$name.'</a></div>';
             }
             ?>
         </nav>
+        
+        <div id="actions">
+            <div class="item">
+                <a href="<?php echo isset($_SESSION['username']) ? 'user/user.php' : 'user/login.php'; ?>">
+                    <img src="./assets/img/user.jpg" alt="Tài khoản">
+                </a>
+            </div>
+            <div class="item">
+                <a href="<?php echo isset($_SESSION['username']) ? 'cart.php' : 'user/login.php'; ?>">
+                    <img src="./assets/img/cart.jpg" alt="Giỏ hàng">
+                </a>
+            </div>
+        </div>
     </header>
 
-    <!-- Chi tiết sản phẩm -->
     <section id="product-detail">
         <div class="img-box">
             <img src="./assets/img/<?php echo $product['img']; ?>" alt="<?php echo $product['name']; ?>">
@@ -121,15 +142,27 @@ $product = $products[$id];
             <h1><?php echo $product['name']; ?></h1>
             <p class="desc"><?php echo $product['desc']; ?></p>
             <div class="price"><?php echo $product['price']; ?></div>
-            <div class="quantity-box">
-    <button type="button" class="qty-btn" id="decrease">-</button>
-    <input type="number" id="quantity" value="1" min="1">
-    <button type="button" class="qty-btn" id="increase">+</button>
-</div>
-<button class="btn-add">Thêm vào giỏ</button>
+            
+            <form method="POST" action="add_to_cart.php" id="form-add-to-cart-product">
+            
+                <input type="hidden" name="product_id" value="<?php echo $id; ?>">
+                <input type="hidden" name="product_name" value="<?php echo htmlspecialchars($product['name']); ?>">
+                <input type="hidden" name="product_price" value="<?php echo $product['price']; ?>">
+                <input type="hidden" name="product_img" value="<?php echo $product['img']; ?>">
 
-
-            <!-- Tabs -->
+                <div class="quantity-box">
+                    <button type="button" class="qty-btn" id="decrease">-</button>
+                    <input type="number" id="quantity" name="quantity" value="1" min="1">
+                    <button type="button" class="qty-btn" id="increase">+</button>
+                </div>
+                
+                <button type="submit" name="add_to_cart" class="btn-add">
+                    <i class="fas fa-cart-plus"></i> Thêm vào giỏ
+                </button>
+            
+            </form>
+            
+            <div id="add-to-cart-message" style="display:none; color: green; margin-top: 10px; font-weight: 600;"></div>
             <div class="tabs product-tabs">
                 <ul id="tabs-nav">
                     <li><a href="#tab2">Thông số</a></li>
@@ -156,27 +189,21 @@ $product = $products[$id];
 </div>
 
 <script>
-// Tabs JS
+// Tabs JS (Giữ nguyên code của bạn)
 const tabs = document.querySelectorAll('#tabs-nav li a');
 const contents = document.querySelectorAll('.tab-content');
 tabs.forEach(tab => {
     tab.addEventListener('click', e => {
         e.preventDefault();
-        // Ẩn tất cả nội dung
         contents.forEach(c => c.style.display = 'none');
-        // Bỏ active cũ
         tabs.forEach(t => t.parentElement.classList.remove('active'));
-        // Hiện tab được chọn
         document.querySelector(tab.getAttribute('href')).style.display = 'block';
         tab.parentElement.classList.add('active');
     });
 });
+tabs[0].click(); // Active tab đầu tiên
 
-// Active tab đầu tiên mặc định
-tabs[0].click();
-
-
-// Tăng giảm số lượng
+// Tăng giảm số lượng (Giữ nguyên code của bạn)
 const decreaseBtn = document.getElementById('decrease');
 const increaseBtn = document.getElementById('increase');
 const quantityInput = document.getElementById('quantity');
@@ -193,21 +220,53 @@ increaseBtn.addEventListener('click', () => {
     quantityInput.value = current + 1;
 });
 
-// Ngăn nhập số âm hoặc 0 trực tiếp vào ô input
 quantityInput.addEventListener('input', () => {
     let current = parseInt(quantityInput.value);
     if (isNaN(current) || current < 1) {
         quantityInput.value = 1;
     }
 });
-</script>
 
+// --- BẮT ĐẦU CODE MỚI THÊM VÀO (JAVASCRIPT) ---
+document.getElementById('form-add-to-cart-product').addEventListener('submit', function(event) {
+    // 1. Ngăn trang tải lại
+    event.preventDefault(); 
 
+    // 2. Lấy dữ liệu form
+    const formData = new FormData(this);
+    formData.append('add_to_cart', '')
+    const messageDiv = document.getElementById('add-to-cart-message');
 
+    // 3. Gửi dữ liệu ngầm (AJAX)
+    fetch('add_to_cart.php', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json()) // Chuyển đổi phản hồi thành JSON
+    .then(data => { // Xử lý dữ liệu JSON
+        // 4. Hiển thị thông báo
+        if (data.success) {
+            messageDiv.textContent = data.message;
+            messageDiv.style.color = 'green';
+        } else {
+            messageDiv.textContent = data.message;
+            messageDiv.style.color = 'red';
+        }
+        messageDiv.style.display = 'block';
 
-
-// Active tab đầu tiên mặc định
-tabs[0].click();
+        // 5. Ẩn thông báo sau 3 giây
+        setTimeout(() => {
+            messageDiv.style.display = 'none';
+        }, 3000);
+    })
+    .catch(error => { // Bắt lỗi nếu có
+        console.error('Lỗi khi gửi AJAX:', error); // In lỗi ra console để debug
+        messageDiv.textContent = 'Có lỗi xảy ra khi thêm vào giỏ, vui lòng thử lại.';
+        messageDiv.style.color = 'red';
+        messageDiv.style.display = 'block';
+    });
+});
+// --- KẾT THÚC CODE MỚI THÊM VÀO ---
 </script>
 
 </body>
