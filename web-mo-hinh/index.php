@@ -4,16 +4,16 @@ include "db/connect.php"; // Kết nối CSDL, đường dẫn đúng với cấ
 
 $title = "Web bán mô hình xe đua";
 
-// Danh sách sản phẩm (thêm nhiều sản phẩm cho trang 2)
+// --- BƯỚC 1: SỬA MẢNG PRODUCTS (Đã thêm "category") ---
 $products = [
-    ["img"=>"lambor.jpg", "name"=>"Mô hình xe Lamborghini Huracan Performante Orange 1:24 Bburago", "desc"=>"Mô tả sản phẩm", "price"=>"429.000đ"],
-    ["img"=>"AMGG63.jpg", "name"=>"Mô hình xe Mercedes-AMG G63 2022 1:43 SOLIDO", "desc"=>"Mô tả sản phẩm", "price"=>"679.000đ"],
-    ["img"=>"moto.jpg", "name"=>"Mô hình mô tô KTM 1290 Super Duke 1:12 Maisto", "desc"=>"Mô tả sản phẩm", "price"=>"289.000đ"],
-    ["img"=>"moto2.jpg", "name"=>"Mô hình xe mô tô Ducati Monster 1:18 Maisto", "desc"=>"Mô tả sản phẩm", "price"=>"189.000đ"],
-    ["img"=>"F1.jpg", "name"=>"Mô hình xe Mercedes F1 2016 W007 Hybrid 1:18 Bburago", "desc"=>"Mô tả sản phẩm", "price"=>"1.849.000đ"],
-    ["img"=>"F1_2.jpg", "name"=>"Mô hình xe F1 Mercedes-AMG W14 E Performance 1:43 BBURAGO", "desc"=>"Mô tả sản phẩm", "price"=>"479.000đ"],
-    ["img"=>"ferr.jpg", "name"=>"Mô hình xe Ferrari FXX K 1:24 Bburago", "desc"=>"Mô tả sản phẩm", "price"=>"549.000đ"],
-    ["img"=>"qp.jpg", "name"=>"Mô hình xe quân sự Hummer Humvee Battlefield Vehicle Military 1:18 KDW", "desc"=>"Mô tả sản phẩm", "price"=>"869.000đ"]
+    ["img"=>"lambor.jpg", "name"=>"Mô hình xe Lamborghini Huracan Performante Orange 1:24 Bburago", "desc"=>"Mô tả sản phẩm", "price"=>"429.000đ", "category"=>"SieuXe"],
+    ["img"=>"AMGG63.jpg", "name"=>"Mô hình xe Mercedes-AMG G63 2022 1:43 SOLIDO", "desc"=>"Mô tả sản phẩm", "price"=>"679.000đ", "category"=>"SieuXe"],
+    ["img"=>"moto.jpg", "name"=>"Mô hình mô tô KTM 1290 Super Duke 1:12 Maisto", "desc"=>"Mô tả sản phẩm", "price"=>"289.000đ", "category"=>"Moto"],
+    ["img"=>"moto2.jpg", "name"=>"Mô hình xe mô tô Ducati Monster 1:18 Maisto", "desc"=>"Mô tả sản phẩm", "price"=>"189.000đ", "category"=>"Moto"],
+    ["img"=>"F1.jpg", "name"=>"Mô hình xe Mercedes F1 2016 W007 Hybrid 1:18 Bburago", "desc"=>"Mô tả sản phẩm", "price"=>"1.849.000đ", "category"=>"F1"],
+    ["img"=>"F1_2.jpg", "name"=>"Mô hình xe F1 Mercedes-AMG W14 E Performance 1:43 BBURAGO", "desc"=>"Mô tả sản phẩm", "price"=>"479.000đ", "category"=>"F1"],
+    ["img"=>"ferr.jpg", "name"=>"Mô hình xe Ferrari FXX K 1:24 Bburago", "desc"=>"Mô tả sản phẩm", "price"=>"549.000đ", "category"=>"SieuXe"],
+    ["img"=>"qp.jpg", "name"=>"Mô hình xe quân sự Hummer Humvee Battlefield Vehicle Military 1:18 KDW", "desc"=>"Mô tả sản phẩm", "price"=>"869.000đ", "category"=>"QuanSu"]
 ];
 
 // Xử lý tìm kiếm
@@ -26,6 +26,16 @@ if (isset($_GET['timkiem']) && !empty($_GET['tukhoa'])) {
     });
 }
 
+// --- BƯỚC 2: THÊM LOGIC LỌC CATEGORY ---
+$category = isset($_GET['category']) ? $_GET['category'] : '';
+if (!empty($category)) {
+    // Lọc tiếp trên kết quả đã tìm kiếm
+    $searchResults = array_filter($searchResults, function($p) use ($category) {
+        return $p['category'] === $category;
+    });
+}
+// --- KẾT THÚC BƯỚC 2 ---
+
 // Phân trang
 $itemsPerPage = 4;
 $totalProducts = count($searchResults);
@@ -33,7 +43,7 @@ $totalPages = ceil($totalProducts / $itemsPerPage);
 $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
 $page = max(1, min($totalPages, $page));
 $startIndex = ($page - 1) * $itemsPerPage;
-$displayProducts = array_slice($searchResults, $startIndex, $itemsPerPage);
+$displayProducts = array_slice($searchResults, $startIndex, $itemsPerPage, true);
 ?>
 <!DOCTYPE html>
 <html lang="vi">
@@ -46,7 +56,7 @@ $displayProducts = array_slice($searchResults, $startIndex, $itemsPerPage);
       integrity="sha512-papH7Y6X7k1Q2Zt2g0a9yqX3sR0kY2oA2J0+Jd2xXz9q9G5b0zFvX6vTnX4FZ6sG/4w6fH0v1u6m3zYcK3v9AQ==" 
       crossorigin="anonymous" referrerpolicy="no-referrer" />
 <style>
-html { scroll-behavior: smooth; }
+
 </style>
 </head>
 <body>
@@ -69,8 +79,7 @@ html { scroll-behavior: smooth; }
         </nav>
 
         <div id="search">
-            <form action="index.php" method="GET">
-                <input type="text" placeholder="Tìm kiếm sản phẩm..." name="tukhoa" value="<?php echo htmlspecialchars($tukhoa); ?>">
+            <form action="index.php#wp-products" method="GET"> <input type="text" placeholder="Tìm kiếm sản phẩm..." name="tukhoa" value="<?php echo htmlspecialchars($tukhoa); ?>">
                 <input type="submit" name="timkiem" value="Tìm kiếm">
             </form>
         </div>
@@ -104,6 +113,13 @@ html { scroll-behavior: smooth; }
     <section id="wp-products">
         <h2>SẢN PHẨM</h2>
 
+        <div class="category-filter">
+            <a href="index.php#wp-products" class="<?php echo empty($category) ? 'active' : ''; ?>">Tất cả</a>
+            <a href="index.php?category=SieuXe#wp-products" class="<?php echo ($category == 'SieuXe') ? 'active' : ''; ?>">Siêu Xe</a>
+            <a href="index.php?category=F1#wp-products" class="<?php echo ($category == 'F1') ? 'active' : ''; ?>">Đua F1</a>
+            <a href="index.php?category=Moto#wp-products" class="<?php echo ($category == 'Moto') ? 'active' : ''; ?>">Mô Tô</a>
+            <a href="index.php?category=QuanSu#wp-products" class="<?php echo ($category == 'QuanSu') ? 'active' : ''; ?>">Quân Sự</a>
+        </div>
         <?php if(!empty($tukhoa)): ?>
             <p style="text-align:center;">Kết quả tìm kiếm cho: <strong><?php echo htmlspecialchars($tukhoa); ?></strong></p>
         <?php endif; ?>
@@ -111,16 +127,14 @@ html { scroll-behavior: smooth; }
 <ul id="list-products">
     <?php foreach($displayProducts as $index => $p): ?>
         <li class="item">
-            <a href="product.php?id=<?php echo $startIndex + $index; ?>">
-                <img src="./assets/img/<?php echo $p['img']; ?>" alt="<?php echo $p['name']; ?>">
+            <a href="product.php?id=<?php echo $index; ?>"> <img src="./assets/img/<?php echo $p['img']; ?>" alt="<?php echo $p['name']; ?>">
             </a>
             
-            <a href="product.php?id=<?php echo $startIndex + $index; ?>" class="name"><?php echo $p['name']; ?></a>
-            <div class="desc"><?php echo $p['desc']; ?></div>
+            <a href="product.php?id=<?php echo $index; ?>" class="name"><?php echo $p['name']; ?></a> <div class="desc"><?php echo $p['desc']; ?></div>
             <div class="price"><?php echo $p['price']; ?></div>
             
             <form method="POST" action="add_to_cart.php" class="form-add-to-cart-index">
-                <input type="hidden" name="product_id" value="<?php echo $startIndex + $index; // Dùng ID duy nhất ?>">
+                <input type="hidden" name="product_id" value="<?php echo $index; // Sửa thành: chỉ $index ?>">
                 <input type="hidden" name="product_name" value="<?php echo htmlspecialchars($p['name']); ?>">
                 <input type="hidden" name="product_price" value="<?php echo $p['price']; ?>">
                 <input type="hidden" name="product_img" value="<?php echo $p['img']; ?>">
@@ -135,12 +149,12 @@ html { scroll-behavior: smooth; }
     <?php endforeach; ?>
 </ul>
 <div class="list-page">
-            <?php for($i=1; $i<=$totalPages; $i++): ?>
-                <div class="item">
-                    <a href="?<?php echo !empty($tukhoa) ? "timkiem=1&tukhoa=".urlencode($tukhoa)."&" : ""; ?>page=<?php echo $i; ?>"><?php echo $i; ?></a>
-                </div>
-            <?php endfor; ?>
+    <?php for($i=1; $i<=$totalPages; $i++): ?>
+        <div class="item">
+            <a href="?<?php echo !empty($tukhoa) ? "timkiem=1&tukhoa=".urlencode($tukhoa)."&" : ""; ?><?php echo !empty($category) ? "category=".urlencode($category)."&" : ""; ?>page=<?php echo $i; ?>#wp-products"><?php echo $i; ?></a>
         </div>
+    <?php endfor; ?>
+</div>
 
         <div id="saleoff">
             <div class="box-left">
@@ -182,49 +196,40 @@ document.addEventListener("DOMContentLoaded", function() {
     // Code animation cho #saleoff (Giữ nguyên)
     const leftBox = document.querySelector("#saleoff .box-left");
     const rightBox = document.querySelector("#saleoff .box-right");
-
     leftBox.style.opacity = "0";
     leftBox.style.transform = "translateX(-150px)";
     rightBox.style.opacity = "0";
     rightBox.style.transform = "translateX(150px)";
-
     const observer = new IntersectionObserver(entries => {
         entries.forEach(entry => {
             if(entry.isIntersecting) {
                 leftBox.style.transition = "all 1s ease-out";
                 leftBox.style.opacity = "1";
                 leftBox.style.transform = "translateX(0)";
-
                 rightBox.style.transition = "all 1s ease-out 0.3s";
                 rightBox.style.opacity = "1";
                 rightBox.style.transform = "translateX(0)";
             }
         });
     }, { threshold: 0.3 });
-
     observer.observe(document.querySelector("#saleoff"));
 
-    // --- CODE AJAX MỚI THÊM VÀO ---
+    // Code AJAX (Giữ nguyên)
     const allForms = document.querySelectorAll('.form-add-to-cart-index');
     
     allForms.forEach(form => {
         form.addEventListener('submit', function(event) {
-            // 1. Ngăn trang tải lại
             event.preventDefault(); 
-
-            // 2. Lấy dữ liệu form này
             const formData = new FormData(form);
-            formData.append('add_to_cart', '')
+            formData.append('add_to_cart', '');
             const messageDiv = form.querySelector('.add-to-cart-message-index');
 
-            // 3. Gửi dữ liệu ngầm (AJAX)
             fetch('add_to_cart.php', {
                 method: 'POST',
                 body: formData
             })
             .then(response => response.json())
             .then(data => {
-                // 4. Hiển thị thông báo
                 if (data.success) {
                     messageDiv.textContent = data.message;
                     messageDiv.style.color = 'green';
@@ -233,8 +238,6 @@ document.addEventListener("DOMContentLoaded", function() {
                     messageDiv.style.color = 'red';
                 }
                 messageDiv.style.display = 'block';
-
-                // 5. Ẩn thông báo sau 3 giây
                 setTimeout(() => {
                     messageDiv.style.display = 'none';
                 }, 3000);
