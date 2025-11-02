@@ -45,16 +45,25 @@ p {text-align:center;}
 </style>
 </head>
 <body>
-<div class="form-box">
-    <h2>Đăng ký</h2>
-    <form method="POST">
-        <input type="text" name="username" placeholder="Tên đăng nhập" required>
-        <input type="email" name="email" placeholder="Email" required>
-        <input type="password" name="password" placeholder="Mật khẩu" required>
-        <button type="submit">Đăng ký</button>
-    </form>
-    <p><?php echo $msg; ?></p>
-    <p>Đã có tài khoản? <a href="login.php">Đăng nhập</a></p>
-</div>
+    <div class="container">
+        <div class="header">
+            Đăng ký tài khoản
+        </div>
+
+        <form method="POST" class="form">
+            <input type="text" name="username" placeholder="Tên đăng nhập" required>
+            <input type="email" name="email" placeholder="Email" required>
+            <input type="password" name="password" placeholder="Mật khẩu" required>
+            <button type="submit">Đăng ký</button>
+
+            <?php if (!empty($msg)): ?>
+                <p style="text-align:center; color:red; margin-top:15px;"><?php echo $msg; ?></p>
+            <?php endif; ?>
+
+            <div class="switch">
+                Đã có tài khoản? <a href="login.php">Đăng nhập</a>
+            </div>
+        </form>
+    </div>
 </body>
 </html>

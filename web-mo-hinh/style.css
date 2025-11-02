@@ -239,7 +239,7 @@ body {
     /* Tạo các cột tự động vừa với chiều rộng tối thiểu 270px */
     grid-template-columns: repeat(auto-fit, 270px); 
     justify-content: center;
-    gap: 50px; /* Khoảng cách giữa các sản phẩm */
+    gap: 75px; /* Khoảng cách giữa các sản phẩm */
     list-style: none;
     padding: 0; 
     align-items: stretch; 
@@ -1232,6 +1232,82 @@ textarea.form-control {
 }
 .related-products #list-products .item .btn-add-cart:hover {
     background: #ffac33;
+}
+
+/* ---------------
+   CHI TIẾT MÃ SẢN PHẨM, THƯƠNG HIỆU (Trang product.php)
+   --------------- */
+
+/* ---------------
+   CHI TIẾT MÃ SẢN PHẨM, THƯƠNG HIỆU, TÌNH TRẠNG (Trang product.php)
+   --------------- */
+
+.product-meta {
+    margin-bottom: 25px; /* Khoảng cách với nút Thêm vào giỏ */
+    border-top: 1px solid #f0f0f0;
+    padding-top: 15px; 
+    
+    /* Font chữ nhạt hơn giống ảnh mẫu */
+    font-size: 15px;
+    color: #777; 
+}
+
+.meta-item {
+    display: flex;
+    margin-bottom: 10px;
+}
+
+.meta-item:last-child {
+    margin-bottom: 0;
+}
+
+.meta-item strong {
+    font-weight: 600;
+    color: #777; /* Nhãn màu xám */
+    margin-right: 8px;
+    min-width: 110px; /* Căn thẳng hàng các nhãn */
+}
+
+/* Dùng flex để căn Thương hiệu (trái) và Còn hàng (phải) */
+.meta-brand-stock {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.meta-item span {
+    color: #333; /* Giá trị màu đen */
+    font-weight: 500;
+}
+
+/* Style cho link Thương hiệu */
+.meta-item span a {
+    color: #0d6efd; /* Màu xanh link (giống các tab) */
+    text-decoration: none;
+    font-weight: 600;
+}
+.meta-item span a:hover {
+    text-decoration: underline;
+}
+
+/* Trạng thái "Còn hàng" (Màu xanh, có viền) */
+.stock-status.in-stock {
+    font-weight: 600;
+    font-size: 0.9rem;
+    padding: 4px 12px;
+    border-radius: 50px;
+    color: #28a745; /* Màu xanh lá */
+    border: 2px solid #28a745;
+}
+
+/* Trạng thái "Hết hàng" (Màu đỏ) */
+.stock-status.out-of-stock {
+    font-weight: 600;
+    font-size: 0.9rem;
+    padding: 4px 12px;
+    border-radius: 50px;
+    color: #dc3545; /* Màu đỏ */
+    border: 2px solid #dc3545;
 }
 
 

@@ -16,7 +16,8 @@ $products = [
         "specs"=>"Mô hình xe Lamborghini Huracan Performante 1:24 Bburago | Màu: Cam | Kích thước: 19×9×5 cm | Chất liệu: Kim loại + Nhựa + Cao su | Mở cửa: Có | Bánh xe đánh lái: Có | Trọng lượng: 650g",
         "warranty"=>"Bảo hành 3 tháng đối với lỗi nhà sản xuất, đổi mới trong 7 ngày nếu lỗi kỹ thuật.",
         "reviews"=>"★★★★☆ – Mô hình chi tiết, sơn bóng đẹp, cửa mở được, bánh xe đánh lái tiện trưng bày; giá hợp lý.",
-        "category"=>"SieuXe"
+        "category"=>"SieuXe",
+        "sku"=>"BBURAGO-21079", "brand"=>"Lamborghini", "stock"=>"Còn hàng"
     ],
     [
         "img"=>"AMGG63.jpg",
@@ -26,7 +27,8 @@ $products = [
         "specs"=>"Mô hình Mercedes-AMG G63 1:43 SOLIDO | Kích thước: 10×5×5 cm | Chất liệu: Kim loại + Nhựa | Cửa mở: Có | Lốp: Cao su | Trọng lượng: 320g",
         "warranty"=>"Bảo hành 6 tháng cho lỗi kỹ thuật, hỗ trợ đổi trả sản phẩm lỗi từ nhà sản xuất.",
         "reviews"=>"★★★★☆ – Chi tiết đẹp, nhỏ gọn, dễ trưng bày; sơn sắc nét, đáng giá tiền.",
-        "category"=>"SieuXe"
+        "category"=>"SieuXe",
+        "sku"=>"SOLIDO-S4311204", "brand"=>"Mercedes-AMG", "stock"=>"Còn hàng"
     ],
     [
         "img"=>"moto.jpg",
@@ -36,7 +38,8 @@ $products = [
         "specs"=>"Mô hình KTM 1290 Super Duke 1:12 Maisto | Chất liệu: Kim loại + Nhựa | Kích thước: 17×6×9 cm | Bánh xe cao su, có giảm xóc giả",
         "warranty"=>"Bảo hành 3 tháng đối với lỗi nhà sản xuất.",
         "reviews"=>"★★★★☆ – Mô tô chi tiết, bánh xe mềm, đẹp mắt; giá hợp lý cho tỉ lệ 1:12.",
-        "category"=>"Moto"
+        "category"=>"Moto",
+        "sku"=>"MAISTO-31101", "brand"=>"KTM", "stock"=>"Còn hàng"
     ],
     [
         "img"=>"moto2.jpg",
@@ -46,7 +49,8 @@ $products = [
         "specs"=>"Mô hình Ducati Monster 1:18 Maisto | Kích thước: 14×5×8 cm | Chất liệu: Kim loại + Nhựa | Bánh xe cao su | Trọng lượng: 250g",
         "warranty"=>"Bảo hành 3 tháng, đổi trả nếu lỗi kỹ thuật từ nhà sản xuất.",
         "reviews"=>"★★★☆☆ – Mô hình nhỏ gọn, phù hợp trưng bày; sơn hơi mỏng, nhưng tổng thể đẹp.",
-        "category"=>"Moto"
+        "category"=>"Moto",
+        "sku"=>"MAISTO-39132", "brand"=>"Ducati", "stock"=>"Còn hàng"
     ],
     [
         "img"=>"F1.jpg",
@@ -56,7 +60,8 @@ $products = [
         "specs"=>"Mô hình Mercedes F1 2016 W007 Hybrid 1:18 Bburago | Kích thước: 25×10×8 cm | Chất liệu: Kim loại + Nhựa | Chi tiết nội thất đầy đủ | Trọng lượng: 1kg",
         "warranty"=>"Bảo hành 6 tháng, hỗ trợ sửa chữa hoặc đổi mới nếu lỗi kỹ thuật.",
         "reviews"=>"★★★★★ – Chi tiết tuyệt vời, màu sắc chính xác, cửa mở được; phù hợp để trưng bày sưu tầm.",
-        "category"=>"F1"
+        "category"=>"F1",
+        "sku"=>"BBURAGO-18001", "brand"=>"Mercedes-AMG F1", "stock"=>"Còn hàng"
     ],
     [
         "img"=>"F1_2.jpg",
@@ -66,7 +71,8 @@ $products = [
         "specs"=>"Mô hình Mercedes-AMG W14 E Performance 1:43 BBURAGO | Kích thước: 11×5×4 cm | Chất liệu: Kim loại + Nhựa | Bánh xe: Cao su | Trọng lượng: 350g",
         "warranty"=>"Bảo hành 6 tháng đối với lỗi kỹ thuật, hỗ trợ đổi mới sản phẩm lỗi từ nhà sản xuất.",
         "reviews"=>"★★★★☆ – Mô hình chi tiết, sơn bóng đẹp; tỉ lệ 1:43 chính xác, đáng giá tiền.",
-        "category"=>"F1"
+        "category"=>"F1",
+        "sku"=>"BBURAGO-43001", "brand"=>"Mercedes-AMG F1", "stock"=>"Hết hàng"
     ],
     [
         "img"=>"ferr.jpg",
@@ -76,7 +82,8 @@ $products = [
         "specs"=>"Mô hình Ferrari FXX K 1:24 Bburago | Kích thước: 20×9×6 cm | Chất liệu: Kim loại + Nhựa | Cửa mở được | Bánh xe đánh lái | Trọng lượng: 700g",
         "warranty"=>"Bảo hành 3 tháng với lỗi kỹ thuật, đổi mới nếu lỗi sản xuất.",
         "reviews"=>"★★★★☆ – Mô hình đẹp, chi tiết, sơn bóng, bánh xe đánh lái; giá hợp lý.",
-        "category"=>"SieuXe"
+        "category"=>"SieuXe",
+        "sku"=>"BBURAGO-26016", "brand"=>"Ferrari", "stock"=>"Còn hàng"
     ],
     [
         "img"=>"qp.jpg",
@@ -86,8 +93,16 @@ $products = [
         "specs"=>"Mô hình Hummer Humvee 1:18 KDW | Kích thước: 23×10×10 cm | Chất liệu: Kim loại + Nhựa | Cửa mở được | Nội thất chi tiết | Trọng lượng: 950g",
         "warranty"=>"Bảo hành 6 tháng đối với lỗi kỹ thuật, hỗ trợ đổi mới sản phẩm lỗi từ nhà sản xuất.",
         "reviews"=>"★★★★★ – Mô hình quân sự chi tiết, chắc chắn, cửa mở được; phù hợp trưng bày sưu tầm.",
-        "category"=>"QuanSu"
+        "category"=>"QuanSu",
+        "sku"=>"KDW-MIL-001", "brand"=>"Hummer", "stock"=>"Còn hàng"
     ]
+];
+
+$category_map = [
+    "SieuXe" => "Siêu Xe",
+    "F1" => "Đua F1",
+    "Moto" => "Mô Tô",
+    "QuanSu" => "Quân Sự"
 ];
 // (Kết thúc danh sách sản phẩm)
 
@@ -163,8 +178,28 @@ $related_products = array_slice($related_products, 0, 4, true);
             <h1><?php echo $product['name']; ?></h1>
             <p class="desc"><?php echo $product['desc']; ?></p>
             <div class="price"><?php echo $product['price']; ?></div>
-            
-            <form method="POST" action="add_to_cart.php" id="form-add-to-cart-product">
+
+        <div class="product-meta">
+            <div class="meta-item">
+                <strong>SKU:</strong>
+                <span><?php echo $product['sku']; ?></span>
+            </div>
+            <div class="meta-item meta-brand-stock">
+                <div>
+                    <strong>Thương hiệu:</strong>
+                    <span>
+                        <a href="index.php?brand=<?php echo $product['brand']; ?>#wp-products">
+                            <?php echo $product['brand']; ?>
+                        </a>
+                    </span>
+                </div>
+                <div class="stock-status <?php echo ($product['stock'] == 'Còn hàng') ? 'in-stock' : 'out-of-stock'; ?>">
+                    (<?php echo $product['stock']; ?>)
+                </div>
+            </div>
+        </div>
+        <form method="POST" action="add_to_cart.php" id="form-add-to-cart-product">
+        
             
                 <input type="hidden" name="product_id" value="<?php echo $id; ?>">
                 <input type="hidden" name="product_name" value="<?php echo htmlspecialchars($product['name']); ?>">
