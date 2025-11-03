@@ -1,49 +1,67 @@
 <?php
 session_start();
-include "db/connect.php"; // Kết nối CSDL, đường dẫn đúng với cấu trúc thư mục
+include "db/connect.php"; // Kết nối CSDL
 
 $title = "Web bán mô hình xe đua";
 
-// --- BƯỚC 1: SỬA MẢNG PRODUCTS (Đã thêm "category") ---
-$products = [
-    ["img"=>"lambor.jpg", "name"=>"Mô hình xe Lamborghini Huracan Performante Orange 1:24 Bburago", "desc"=>"Mô tả sản phẩm", "price"=>"429.000đ", "category"=>"SieuXe"],
-    ["img"=>"AMGG63.jpg", "name"=>"Mô hình xe Mercedes-AMG G63 2022 1:43 SOLIDO", "desc"=>"Mô tả sản phẩm", "price"=>"679.000đ", "category"=>"SieuXe"],
-    ["img"=>"moto.jpg", "name"=>"Mô hình mô tô KTM 1290 Super Duke 1:12 Maisto", "desc"=>"Mô tả sản phẩm", "price"=>"289.000đ", "category"=>"Moto"],
-    ["img"=>"moto2.jpg", "name"=>"Mô hình xe mô tô Ducati Monster 1:18 Maisto", "desc"=>"Mô tả sản phẩm", "price"=>"189.000đ", "category"=>"Moto"],
-    ["img"=>"F1.jpg", "name"=>"Mô hình xe Mercedes F1 2016 W007 Hybrid 1:18 Bburago", "desc"=>"Mô tả sản phẩm", "price"=>"1.849.000đ", "category"=>"F1"],
-    ["img"=>"F1_2.jpg", "name"=>"Mô hình xe F1 Mercedes-AMG W14 E Performance 1:43 BBURAGO", "desc"=>"Mô tả sản phẩm", "price"=>"479.000đ", "category"=>"F1"],
-    ["img"=>"ferr.jpg", "name"=>"Mô hình xe Ferrari FXX K 1:24 Bburago", "desc"=>"Mô tả sản phẩm", "price"=>"549.000đ", "category"=>"SieuXe"],
-    ["img"=>"qp.jpg", "name"=>"Mô hình xe quân sự Hummer Humvee Battlefield Vehicle Military 1:18 KDW", "desc"=>"Mô tả sản phẩm", "price"=>"869.000đ", "category"=>"QuanSu"]
-];
-
-// Xử lý tìm kiếm
-$searchResults = $products;
-$tukhoa = '';
-if (isset($_GET['timkiem']) && !empty($_GET['tukhoa'])) {
-    $tukhoa = strtolower($_GET['tukhoa']);
-    $searchResults = array_filter($products, function($p) use ($tukhoa) {
-        return strpos(strtolower($p['name']), $tukhoa) !== false;
-    });
-}
-
-// --- BƯỚC 2: THÊM LOGIC LỌC CATEGORY ---
-$category = isset($_GET['category']) ? $_GET['category'] : '';
-if (!empty($category)) {
-    // Lọc tiếp trên kết quả đã tìm kiếm
-    $searchResults = array_filter($searchResults, function($p) use ($category) {
-        return $p['category'] === $category;
-    });
-}
-// --- KẾT THÚC BƯỚC 2 ---
+// --- LOGIC MỚI: LẤY SẢN PHẨM TỪ CSDL ---
 
 // Phân trang
 $itemsPerPage = 4;
-$totalProducts = count($searchResults);
-$totalPages = ceil($totalProducts / $itemsPerPage);
 $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
-$page = max(1, min($totalPages, $page));
+$page = max(1, $page); // Trang không thể < 1
 $startIndex = ($page - 1) * $itemsPerPage;
-$displayProducts = array_slice($searchResults, $startIndex, $itemsPerPage, true);
+
+// Xử lý Lọc & Tìm kiếm
+$tukhoa = isset($_GET['tukhoa']) ? trim($_GET['tukhoa']) : '';
+$category = isset($_GET['category']) ? $_GET['category'] : '';
+
+$base_sql = "FROM products"; // Giả sử tên bảng là 'products'
+$where_clauses = [];
+$params = [];
+$types = ""; // Chuỗi kiểu dữ liệu cho bind_param
+
+// 1. Lọc theo Tìm kiếm
+if (!empty($tukhoa)) {
+    $where_clauses[] = "name LIKE ?"; // Giả sử cột tên là 'name'
+    $params[] = "%" . $tukhoa . "%";
+    $types .= "s";
+}
+
+// 2. Lọc theo Danh mục
+if (!empty($category)) {
+    $where_clauses[] = "category = ?"; // Giả sử cột danh mục là 'category'
+    $params[] = $category;
+    $types .= "s";
+}
+
+// Nối các điều kiện WHERE
+if (!empty($where_clauses)) {
+    $base_sql .= " WHERE " . implode(" AND ", $where_clauses);
+}
+
+// 3. Lấy TỔNG SỐ sản phẩm (để phân trang)
+$sql_total = "SELECT COUNT(id) as total " . $base_sql;
+$stmt_total = $conn->prepare($sql_total);
+if (!empty($params)) {
+    $stmt_total->bind_param($types, ...$params);
+}
+$stmt_total->execute();
+$totalProducts = $stmt_total->get_result()->fetch_assoc()['total'];
+$totalPages = ($totalProducts > 0) ? ceil($totalProducts / $itemsPerPage) : 1;
+
+// 4. Lấy sản phẩm cho trang hiện tại
+$sql = "SELECT id, name, price, img, `desc` " . $base_sql . " LIMIT ?, ?";
+$types .= "ii";
+$params[] = $startIndex;
+$params[] = $itemsPerPage;
+
+$stmt = $conn->prepare($sql);
+$stmt->bind_param($types, ...$params);
+$stmt->execute();
+$displayProducts = $stmt->get_result(); // Đây là kết quả để lặp
+
+// --- KẾT THÚC LOGIC MỚI ---
 ?>
 <!DOCTYPE html>
 <html lang="vi">
@@ -56,7 +74,7 @@ $displayProducts = array_slice($searchResults, $startIndex, $itemsPerPage, true)
       integrity="sha512-papH7Y6X7k1Q2Zt2g0a9yqX3sR0kY2oA2J0+Jd2xXz9q9G5b0zFvX6vTnX4FZ6sG/4w6fH0v1u6m3zYcK3v9AQ==" 
       crossorigin="anonymous" referrerpolicy="no-referrer" />
 <style>
-
+/* Đã xóa scroll-behavior: smooth theo yêu cầu */
 </style>
 </head>
 <body>
@@ -79,7 +97,8 @@ $displayProducts = array_slice($searchResults, $startIndex, $itemsPerPage, true)
         </nav>
 
         <div id="search">
-            <form action="index.php#wp-products" method="GET"> <input type="text" placeholder="Tìm kiếm sản phẩm..." name="tukhoa" value="<?php echo htmlspecialchars($tukhoa); ?>">
+            <form action="index.php#wp-products" method="GET"> 
+                <input type="text" placeholder="Tìm kiếm sản phẩm..." name="tukhoa" value="<?php echo htmlspecialchars($tukhoa); ?>">
                 <input type="submit" name="timkiem" value="Tìm kiếm">
             </form>
         </div>
@@ -120,21 +139,24 @@ $displayProducts = array_slice($searchResults, $startIndex, $itemsPerPage, true)
             <a href="index.php?category=Moto#wp-products" class="<?php echo ($category == 'Moto') ? 'active' : ''; ?>">Mô Tô</a>
             <a href="index.php?category=QuanSu#wp-products" class="<?php echo ($category == 'QuanSu') ? 'active' : ''; ?>">Quân Sự</a>
         </div>
+
         <?php if(!empty($tukhoa)): ?>
             <p style="text-align:center;">Kết quả tìm kiếm cho: <strong><?php echo htmlspecialchars($tukhoa); ?></strong></p>
         <?php endif; ?>
 
 <ul id="list-products">
-    <?php foreach($displayProducts as $index => $p): ?>
+    <?php while($p = $displayProducts->fetch_assoc()): // Dùng vòng lặp while ?>
         <li class="item">
-            <a href="product.php?id=<?php echo $index; ?>"> <img src="./assets/img/<?php echo $p['img']; ?>" alt="<?php echo $p['name']; ?>">
+            <a href="product.php?id=<?php echo $p['id']; ?>">
+                <img src="./assets/img/<?php echo $p['img']; ?>" alt="<?php echo $p['name']; ?>">
             </a>
             
-            <a href="product.php?id=<?php echo $index; ?>" class="name"><?php echo $p['name']; ?></a> <div class="desc"><?php echo $p['desc']; ?></div>
+            <a href="product.php?id=<?php echo $p['id']; ?>" class="name"><?php echo $p['name']; ?></a>
+            <div class="desc"><?php echo $p['desc']; ?></div>
             <div class="price"><?php echo $p['price']; ?></div>
             
             <form method="POST" action="add_to_cart.php" class="form-add-to-cart-index">
-                <input type="hidden" name="product_id" value="<?php echo $index; // Sửa thành: chỉ $index ?>">
+                <input type="hidden" name="product_id" value="<?php echo $p['id']; ?>">
                 <input type="hidden" name="product_name" value="<?php echo htmlspecialchars($p['name']); ?>">
                 <input type="hidden" name="product_price" value="<?php echo $p['price']; ?>">
                 <input type="hidden" name="product_img" value="<?php echo $p['img']; ?>">
@@ -146,7 +168,7 @@ $displayProducts = array_slice($searchResults, $startIndex, $itemsPerPage, true)
                 <div class="add-to-cart-message-index" style="display:none; color: green; text-align:center; padding-top: 5px; font-size: 0.9rem;"></div>
             </form>
         </li>
-    <?php endforeach; ?>
+    <?php endwhile; ?>
 </ul>
 <div class="list-page">
     <?php for($i=1; $i<=$totalPages; $i++): ?>
@@ -193,7 +215,7 @@ $displayProducts = array_slice($searchResults, $startIndex, $itemsPerPage, true)
 
 <script>
 document.addEventListener("DOMContentLoaded", function() {
-    // Code animation cho #saleoff (Giữ nguyên)
+    // Code animation (Giữ nguyên)
     const leftBox = document.querySelector("#saleoff .box-left");
     const rightBox = document.querySelector("#saleoff .box-right");
     leftBox.style.opacity = "0";

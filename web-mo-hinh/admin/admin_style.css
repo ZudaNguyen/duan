@@ -1,0 +1,157 @@
+/* ---------------
+   STYLE CHUNG (cho admin/)
+   --------------- */
+body {
+    background-color: #1c1c1c; /* Nền đen nhựa đường */
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    color: #e0e0e0;
+    margin: 0;
+    padding: 20px;
+}
+
+.container {
+    max-width: 1100px;
+    margin: 20px auto;
+    background: #2a2a2a; /* Nền xám carbon */
+    padding: 30px 40px;
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    border: 1px solid #444;
+}
+
+h1 {
+    color: #ff9900; /* Màu cam */
+    text-align: center;
+    margin-bottom: 30px;
+    font-weight: 700;
+}
+h1 i {
+    margin-right: 10px;
+}
+
+/* Link quay lại */
+.back-link {
+    color: #ff9900;
+    text-decoration: none;
+    font-weight: 500;
+    display: inline-block;
+    margin-bottom: 20px;
+}
+.back-link:hover {
+    text-decoration: underline;
+}
+
+/* Thông báo (Success/Error) */
+.message {
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    font-weight: 500;
+    text-align: center;
+}
+.message.success {
+    background: #28a745;
+    color: #fff;
+}
+.message.error {
+    background: #dc3545;
+    color: #fff;
+}
+
+/* ---------------
+   STYLE FORM (cho add_product.php)
+   --------------- */
+.form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* 2 cột */
+    gap: 20px;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+.form-group label {
+    display: block;
+    font-weight: 500;
+    color: #bbb;
+    margin-bottom: 8px;
+}
+.form-group input[type="text"],
+.form-group input[type="file"],
+.form-group textarea,
+.form-group select {
+    width: 100%;
+    background-color: #1a1a1a;
+    border: 1px solid #555;
+    border-radius: 8px;
+    padding: 12px;
+    color: #f0f0f0;
+    font-size: 1rem;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+.form-group input:focus,
+.form-group textarea:focus,
+.form-group select:focus {
+    border-color: #ff9900;
+    box-shadow: 0 0 0 3px rgba(255, 153, 0, 0.4);
+    outline: none;
+}
+.form-group textarea {
+    resize: vertical;
+}
+
+/* Nút Submit */
+.form-group button[type="submit"] {
+    width: 100%;
+    padding: 12px;
+    border: none;
+    border-radius: 50px;
+    background: #ff9900;
+    color: #000;
+    font-size: 1.1rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+}
+.form-group button[type="submit"]:hover {
+    background: #ffac33;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(255, 153, 0, 0.3);
+}
+
+/* ---------------
+   CSS CHO TAB NAV (admin/index.php) - BƯỚC 3
+   --------------- */
+
+.admin-nav {
+    border-bottom: 1px solid #444;
+    padding-bottom: 15px;
+    margin-bottom: 20px;
+    overflow: hidden; /* Clear float */
+}
+.admin-nav .nav-link {
+    background: #333;
+    color: #fff;
+    padding: 10px 18px;
+    border-radius: 5px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    border: 1px solid #555;
+    margin-right: 10px; /* Thêm khoảng cách */
+}
+.admin-nav .nav-link:hover {
+    background: #444;
+}
+
+/* Tab đang được chọn (Active) */
+.admin-nav .nav-link.active {
+    background: #ff9900;
+    color: #000;
+    border-color: #ff9900;
+}
+
