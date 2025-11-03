@@ -7,4 +7,6 @@ MK ADMIN: 1
 
 Muốn web hoạt động thì vào phpMyadmin và NHẬP TOÀN BỘ SQL có trong file
 
-khi lưu về thì lưu file code, hình,... về ĐÚNG TÊN code mới hoạt động
+khi lưu về thì lưu file code, hình,... về ĐÚNG TÊN code MỚI HOẠT ĐỘNG
+
+Các file, và hình phải LƯU ĐÚNG cấu trúc file đã gửi thì MỚI HOẠT ĐỘNG
