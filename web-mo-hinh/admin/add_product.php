@@ -201,4 +201,3 @@ if (isset($_POST['submit_product'])) {
     </div>
 </body>
 </html>
-

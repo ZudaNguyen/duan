@@ -55,4 +55,3 @@ if (isset($_GET['id'])) {
 header("Location: manage_products.php");
 exit;
 ?>
-

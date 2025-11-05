@@ -137,4 +137,3 @@ $result = $conn->query("SELECT id, name, price, sku, category, img FROM products
     </div>
 </body>
 </html>
-

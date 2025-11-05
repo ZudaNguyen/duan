@@ -157,11 +157,17 @@ $view = isset($_GET['view']) ? $_GET['view'] : 'manage';
             object-fit: cover;
             border-radius: 5px;
         }
-        .action-links a {
+
+        .action-links-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            vertical-align: auto;
+        }
+        .action-links-wrapper a {
             text-decoration: none;
             padding: 5px 10px;
-            border-radius: 5px;
-            margin-right: 5px;
+            border-radius: 8px;
             font-weight: 500;
         }
         .btn-edit {
@@ -230,8 +236,8 @@ $view = isset($_GET['view']) ? $_GET['view'] : 'manage';
                                 <td><?php echo $row['price']; ?></td>
                                 <td><?php echo $row['sku']; ?></td>
                                 <td><?php echo $row['category']; ?></td>
-                                <td class="action-links">
-                                    <a href="#" class="btn-edit">Sửa</a>
+                                <td class="action-links-wrapper">
+                                    <a href="edit_product.php?id=<?php echo $row['id']; ?>" class="btn-edit">Sửa</a>
                                     <!-- Sửa link Xóa: trỏ về trang này với action=delete -->
                                     <a href="index.php?action=delete&id=<?php echo $row['id']; ?>" 
                                        class="btn-delete" 
@@ -330,5 +336,4 @@ $view = isset($_GET['view']) ? $_GET['view'] : 'manage';
     </div>
 </body>
 </html>
-
 
