@@ -1,339 +1,338 @@
 <?php
 session_start();
-include "../db/connect.php"; // Đi lùi 1 cấp để vào db/connect.php
+include "../db/connect.php"; // Kết nối CSDL
 
-$msg = "";
-$error_msg = "";
-
-// --- BẢO MẬT: KIỂM TRA QUYỀN ADMIN ---
+// ========================================================================
+// 1. BẢO MẬT: CHỈ CHO PHÉP ADMIN TRUY CẬP
+// ========================================================================
 $is_admin = false;
 if (isset($_SESSION['username']) && isset($_SESSION['role']) && $_SESSION['role'] === 'admin') {
     $is_admin = true;
-    $username = $_SESSION['username'];
+    $admin_username = $_SESSION['username'];
 }
 if (!$is_admin) {
-    header("Location: login.php"); // Về trang login CỦA ADMIN
+    header("Location: login.php");
     exit();
 }
-// --- KẾT THÚC BẢO MẬT ---
 
+// ========================================================================
+// 2. XỬ LÝ CÁC HÀNH ĐỘNG (ACTIONS) TỪ URL/FORM
+// ========================================================================
+$msg = "";
+$error_msg = "";
+$view = isset($_GET['view']) ? $_GET['view'] : 'dashboard'; 
+$action = isset($_GET['action']) ? $_GET['action'] : '';
 
-// --- LOGIC 1: XỬ LÝ XÓA SẢN PHẨM ---
-// (Copy từ file delete_product.php cũ)
-if (isset($_GET['action']) && $_GET['action'] == 'delete' && isset($_GET['id'])) {
+// --- ACTION: XÓA SẢN PHẨM ---
+if ($action === 'delete_product' && isset($_GET['id'])) {
     $id_to_delete = (int)$_GET['id'];
-
-    // 1. Lấy tên file ảnh từ CSDL để xóa
-    $stmt_img = $conn->prepare("SELECT img FROM products WHERE id = ?");
-    $stmt_img->bind_param("i", $id_to_delete);
-    $stmt_img->execute();
-    $result_img = $stmt_img->get_result();
-    
-    if ($result_img->num_rows === 1) {
-        $img_name = $result_img->fetch_assoc()['img'];
-        $file_path = "../assets/img/" . $img_name;
-
-        // 2. Xóa file ảnh khỏi thư mục /assets/img/
-        if (file_exists($file_path)) {
-            unlink($file_path); // Hàm unlink() để xóa file
-        }
+    // Lấy ảnh để xóa file
+    $stmt = $conn->prepare("SELECT img FROM products WHERE id = ?");
+    $stmt->bind_param("i", $id_to_delete);
+    $stmt->execute();
+    $res = $stmt->get_result();
+    if ($res->num_rows > 0) {
+        $img = $res->fetch_assoc()['img'];
+        if (file_exists("../assets/img/" . $img)) unlink("../assets/img/" . $img);
     }
-    
-    // 3. Xóa sản phẩm khỏi CSDL
-    $stmt_delete = $conn->prepare("DELETE FROM products WHERE id = ?");
-    $stmt_delete->bind_param("i", $id_to_delete);
-    
-    if ($stmt_delete->execute()) {
-        $msg = "Xóa sản phẩm thành công!";
-    } else {
-        $error_msg = "Lỗi khi xóa khỏi CSDL: " . $stmt_delete->error;
-    }
-    // Không cần chuyển hướng, vì code sẽ chạy tiếp xuống LOGIC 2
+    // Xóa trong CSDL
+    $conn->query("DELETE FROM products WHERE id = $id_to_delete");
+    $msg = "Đã xóa sản phẩm!";
+    $view = 'manage';
 }
 
+// --- ACTION: THÊM SẢN PHẨM MỚI ---
+if (isset($_POST['submit_add_product'])) {
+    // Lấy dữ liệu từ form (Sử dụng ?? '' để tránh lỗi Warning nếu để trống)
+    $name = $_POST['name'] ?? '';
+    $price = $_POST['price'] ?? '';
+    $sku = $_POST['sku'] ?? '';
+    $brand = $_POST['brand'] ?? '';
+    $category = $_POST['category'] ?? '';
+    $stock = $_POST['stock'] ?? '';
+    $desc = $_POST['desc'] ?? '';
+    $specs = $_POST['specs'] ?? '';
+    $warranty = $_POST['warranty'] ?? '';
+    $reviews = $_POST['reviews'] ?? '';
+    $img_name = "";
 
-// --- LOGIC 2: XỬ LÝ THÊM SẢN PHẨM ---
-// (Copy từ file add_product.php cũ)
-if (isset($_POST['submit_product'])) {
-    
-    // Lấy dữ liệu từ form
-    $name = $_POST['name'];
-    $desc = $_POST['desc'];
-    $price = $_POST['price'];
-    $specs = $_POST['specs'];
-    $warranty = $_POST['warranty'];
-    $reviews = $_POST['reviews'];
-    $category = $_POST['category'];
-    $sku = $_POST['sku'];
-    $brand = $_POST['brand'];
-    $stock = $_POST['stock'];
-    $img_name = ""; 
-
-    // Xử lý Upload Ảnh
+    // Xử lý upload ảnh
     if (isset($_FILES['img']) && $_FILES['img']['error'] == 0) {
-        $target_dir = "../assets/img/"; 
+        $target_dir = "../assets/img/";
         $img_name = uniqid() . '-' . basename($_FILES["img"]["name"]);
-        $target_file = $target_dir . $img_name;
-        $imageFileType = strtolower(pathinfo($target_file, PATHINFO_EXTENSION));
-
-        $check = getimagesize($_FILES["img"]["tmp_name"]);
-        if($check !== false) {
-            if($imageFileType == "jpg" || $imageFileType == "png" || $imageFileType == "jpeg") {
-                if (move_uploaded_file($_FILES["img"]["tmp_name"], $target_file)) {
-                    // Thành công
-                } else {
-                    $error_msg = "Lỗi khi tải ảnh lên (không thể di chuyển file).";
-                }
-            } else {
-                $error_msg = "Chỉ chấp nhận file JPG, JPEG & PNG.";
-            }
-        } else {
-            $error_msg = "File không phải là ảnh.";
-        }
-    } else {
-        $error_msg = "Vui lòng chọn ảnh cho sản phẩm.";
+        move_uploaded_file($_FILES["img"]["tmp_name"], $target_dir . $img_name);
     }
 
     // Chèn vào CSDL
-    if ($error_msg == "") {
-        $sql = "INSERT INTO products (name, img, `desc`, price, specs, warranty, reviews, category, sku, brand, stock) 
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-        
-        $stmt = $conn->prepare($sql);
-        $stmt->bind_param("sssssssssss", 
-            $name, $img_name, $desc, $price, $specs, $warranty, 
-            $reviews, $category, $sku, $brand, $stock
-        );
+    $stmt = $conn->prepare("INSERT INTO products (name, img, `desc`, price, specs, warranty, reviews, category, sku, brand, stock) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+    $stmt->bind_param("sssssssssss", $name, $img_name, $desc, $price, $specs, $warranty, $reviews, $category, $sku, $brand, $stock);
+    
+    if ($stmt->execute()) {
+        $msg = "Thêm sản phẩm thành công!";
+    } else {
+        $error_msg = "Lỗi: " . $stmt->error;
+    }
+    $view = 'add'; // Ở lại trang thêm để tiếp tục
+}
 
-        if ($stmt->execute()) {
-            $msg = "Thêm sản phẩm mới thành công!";
-        } else {
-            $error_msg = "Lỗi khi thêm vào CSDL: " . $stmt->error;
-        }
+// --- ACTION: CẬP NHẬT TRẠNG THÁI ĐƠN HÀNG ---
+if ($action === 'update_order_status' && isset($_GET['id']) && isset($_GET['status'])) {
+    $order_id = (int)$_GET['id'];
+    $new_status = $_GET['status'];
+    $stmt = $conn->prepare("UPDATE orders SET status = ? WHERE order_id = ?");
+    $stmt->bind_param("si", $new_status, $order_id);
+    $stmt->execute();
+    $msg = "Đã cập nhật đơn hàng #$order_id sang trạng thái: $new_status";
+    $view = 'orders';
+}
+
+// --- ACTION: XÓA NGƯỜI DÙNG ---
+if ($action === 'delete_user' && isset($_GET['id'])) {
+    $uid = (int)$_GET['id'];
+    if ($uid != $_SESSION['user']['id']) { // Không cho tự xóa mình
+         $conn->query("DELETE FROM users WHERE id = $uid");
+         $msg = "Đã xóa người dùng!";
+    }
+    $view = 'users';
+}
+
+// ========================================================================
+// 3. LẤY DỮ LIỆU ĐỂ HIỂN THỊ
+// ========================================================================
+$stats = []; $orders = []; $products = []; $users = [];
+$current_order = null; $order_details = [];
+
+if ($view === 'dashboard') {
+    $stats['revenue'] = $conn->query("SELECT SUM(total_price) as t FROM orders WHERE status = 'Đã giao hàng'")->fetch_assoc()['t'] ?? 0;
+    $stats['pending'] = $conn->query("SELECT COUNT(*) as c FROM orders WHERE status = 'Đang xử lý'")->fetch_assoc()['c'] ?? 0;
+    $stats['users'] = $conn->query("SELECT COUNT(*) as c FROM users")->fetch_assoc()['c'] ?? 0;
+    $stats['products'] = $conn->query("SELECT COUNT(*) as c FROM products")->fetch_assoc()['c'] ?? 0;
+}
+elseif ($view === 'orders') {
+    $res = $conn->query("SELECT * FROM orders ORDER BY order_date DESC");
+    while ($row = $res->fetch_assoc()) $orders[] = $row;
+}
+elseif ($view === 'manage') {
+    $res = $conn->query("SELECT * FROM products ORDER BY id DESC");
+    while ($row = $res->fetch_assoc()) $products[] = $row;
+}
+elseif ($view === 'users') {
+    $res = $conn->query("SELECT * FROM users ORDER BY id DESC");
+    while ($row = $res->fetch_assoc()) $users[] = $row;
+}
+elseif ($view === 'order_detail' && isset($_GET['id'])) {
+    $oid = (int)$_GET['id'];
+    $stmt = $conn->prepare("SELECT * FROM orders WHERE order_id = ?");
+    $stmt->bind_param("i", $oid);
+    $stmt->execute();
+    $current_order = $stmt->get_result()->fetch_assoc();
+    if ($current_order) {
+        $stmt2 = $conn->prepare("SELECT * FROM order_details WHERE order_id = ?");
+        $stmt2->bind_param("i", $oid);
+        $stmt2->execute();
+        $res2 = $stmt2->get_result();
+        while ($row = $res2->fetch_assoc()) $order_details[] = $row;
     }
 }
-// --- KẾT THÚC LOGIC 2 ---
-
-
-// --- LOGIC 3: LẤY DANH SÁCH SẢN PHẨM ---
-// (Copy từ file manage_products.php cũ)
-$products_result = $conn->query("SELECT id, name, price, sku, category, img FROM products ORDER BY id DESC");
-
-
-// --- LOGIC 4: ĐIỀU HƯỚNG VIEW ---
-// Quyết định xem nên hiển thị trang nào (Quản lý hay Thêm)
-// Mặc định là 'manage' (Quản lý)
-$view = isset($_GET['view']) ? $_GET['view'] : 'manage';
-
 ?>
 <!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Panel</title>
-    <link rel="stylesheet" href="admin_style.css"> 
+    <title>Trang Quản Trị</title>
+    <link rel="stylesheet" href="admin_style.css?v=3"> 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        /* CSS riêng cho bảng quản lý */
-        .product-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-        }
-        .product-table th, .product-table td {
-            border: 1px solid #555;
-            padding: 10px 12px;
-            text-align: left;
-            vertical-align: middle;
-        }
-        .product-table th {
-            background-color: #333;
-            color: #ff9900;
-        }
-        .product-table img {
-            width: 60px;
-            height: 60px;
-            object-fit: cover;
-            border-radius: 5px;
-        }
-
-        .action-links-wrapper {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            vertical-align: auto;
-        }
-        .action-links-wrapper a {
-            text-decoration: none;
-            padding: 5px 10px;
-            border-radius: 8px;
-            font-weight: 500;
-        }
-        .btn-edit {
-            background-color: #ffc107; color: #000;
-        }
-        .btn-delete {
-            background-color: #dc3545; color: #fff;
-        }
+        /* CSS Modal (Popup) */
+        .modal { display: block; position: fixed; z-index: 999; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.8); overflow-y: auto; }
+        .modal-content { background-color: #2a2a2a; margin: 5vh auto; padding: 30px; border: 1px solid #444; width: 90%; max-width: 800px; border-radius: 15px; position: relative; animation: slideDown 0.3s ease-out; color: #e0e0e0; }
+        @keyframes slideDown { from {transform: translateY(-50px); opacity: 0;} to {transform: translateY(0); opacity: 1;} }
+        .close-modal { position: absolute; right: 20px; top: 15px; color: #aaa; font-size: 30px; font-weight: bold; cursor: pointer; transition: 0.2s; }
+        .close-modal:hover { color: #ff9900; }
+        .order-info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-bottom: 30px; padding-bottom: 20px; border-bottom: 1px solid #444; }
+        .info-group h4 { color: #ff9900; margin-bottom: 15px; border-bottom: 1px solid #444; display: inline-block; padding-bottom: 5px; }
+        .info-group p { margin: 8px 0; color: #ccc; }
+        .info-group strong { color: #fff; min-width: 100px; display: inline-block; }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1><i class="fas fa-tools"></i> Admin Panel</h1>
-        <p class="welcome-msg" style="text-align: center; color: #ccc; margin-top: -15px; margin-bottom: 20px;">
-            Chào mừng, <?php echo htmlspecialchars($username); ?>!
-        </p>
+        <h1><i class="fas fa-shield-alt"></i> Trang Quản Trị</h1>
         
-        <!-- Menu điều hướng admin (Tab) -->
         <div class="admin-nav">
-            <a href="index.php?view=manage" 
-               class="nav-link <?php echo ($view == 'manage') ? 'active' : ''; ?>">
-               <i class="fas fa-list-alt"></i> Quản lý Sản phẩm
-            </a>
-            <a href="index.php?view=add" 
-               class="nav-link <?php echo ($view == 'add') ? 'active' : ''; ?>">
-               <i class="fas fa-plus-circle"></i> Thêm sản phẩm mới
-            </a>
-            <a href="logout.php" class="back-link" style="float: right;">Đăng xuất</a>
-            <a href="../index.php" class="back-link" style="float: right; margin-right: 15px;">&larr; Về trang chủ</a>
+            <a href="?view=dashboard" class="nav-link <?php echo $view=='dashboard'?'active':''; ?>"><i class="fas fa-tachometer-alt"></i> Bảng điều khiển</a>
+            <a href="?view=orders" class="nav-link <?php echo $view=='orders'?'active':''; ?>"><i class="fas fa-box-open"></i> Quản lý Đơn hàng</a>
+            <a href="?view=manage" class="nav-link <?php echo $view=='manage'?'active':''; ?>"><i class="fas fa-list-alt"></i> Quản lý Sản phẩm</a>
+            <a href="?view=add" class="nav-link <?php echo $view=='add'?'active':''; ?>"><i class="fas fa-plus-circle"></i> Thêm Sản phẩm</a>
+            <a href="?view=users" class="nav-link <?php echo $view=='users'?'active':''; ?>"><i class="fas fa-users"></i> Quản lý Người dùng</a>
+            <a href="logout.php" class="back-link" style="margin-left: auto; color: #dc3545;">Đăng xuất <i class="fas fa-sign-out-alt"></i></a>
         </div>
 
-        <!-- Hiển thị thông báo (nếu có) -->
-        <?php if ($msg): ?>
-            <div class="message success"><?php echo $msg; ?></div>
-        <?php endif; ?>
-        <?php if ($error_msg): ?>
-            <div class="message error"><?php echo $error_msg; ?></div>
-        <?php endif; ?>
+        <?php if($msg): ?><div class="message success"><?php echo $msg; ?></div><?php endif; ?>
+        <?php if($error_msg): ?><div class="message error"><?php echo $error_msg; ?></div><?php endif; ?>
 
+        <?php if ($view === 'dashboard'): ?>
+            <h2>Tổng quan cửa hàng</h2>
+            <div class="dashboard-grid">
+                <div class="stat-card">
+                    <h3>Doanh thu (Đã giao)</h3>
+                    <div class="stat-value"><?php echo number_format($stats['revenue'], 0, ',', '.'); ?>đ</div>
+                    <i class="fas fa-coins"></i>
+                </div>
+                <div class="stat-card">
+                    <h3>Đơn chờ xử lý</h3>
+                    <div class="stat-value"><?php echo $stats['pending']; ?></div>
+                    <i class="fas fa-clock"></i>
+                </div>
+                <div class="stat-card">
+                    <h3>Tổng sản phẩm</h3>
+                    <div class="stat-value"><?php echo $stats['products']; ?></div>
+                    <i class="fas fa-boxes"></i>
+                </div>
+                <div class="stat-card">
+                    <h3>Khách hàng</h3>
+                    <div class="stat-value"><?php echo $stats['users']; ?></div>
+                    <i class="fas fa-users"></i>
+                </div>
+            </div>
 
-        <!-- Bắt đầu Hiển thị nội dung theo View -->
-        
-        <?php if ($view == 'manage'): ?>
-        <!-- #################### VIEW 1: QUẢN LÝ SẢN PHẨM #################### -->
-        <div id="manage-view">
-            <h2>Danh sách sản phẩm</h2>
+        <?php elseif ($view === 'orders'): ?>
+            <h2>Danh sách Đơn hàng</h2>
             <table class="product-table">
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Ảnh</th>
-                        <th>Tên sản phẩm</th>
-                        <th>Giá</th>
-                        <th>SKU</th>
-                        <th>Danh mục</th>
-                        <th>Hành động</th>
-                    </tr>
-                </thead>
+                <thead><tr><th>ID</th><th>Khách hàng</th><th>Tổng tiền</th><th>Ngày đặt</th><th>Trạng thái</th><th>Chi tiết</th></tr></thead>
                 <tbody>
-                    <?php if ($products_result->num_rows > 0): ?>
-                        <?php while($row = $products_result->fetch_assoc()): ?>
-                            <tr>
-                                <td><?php echo $row['id']; ?></td>
-                                <td><img src="../assets/img/<?php echo $row['img']; ?>" alt="Ảnh"></td>
-                                <td><?php echo htmlspecialchars($row['name']); ?></td>
-                                <td><?php echo $row['price']; ?></td>
-                                <td><?php echo $row['sku']; ?></td>
-                                <td><?php echo $row['category']; ?></td>
-                                <td class="action-links-wrapper">
-                                    <a href="edit_product.php?id=<?php echo $row['id']; ?>" class="btn-edit">Sửa</a>
-                                    <!-- Sửa link Xóa: trỏ về trang này với action=delete -->
-                                    <a href="index.php?action=delete&id=<?php echo $row['id']; ?>" 
-                                       class="btn-delete" 
-                                       onclick="return confirm('Bạn có chắc chắn muốn xóa sản phẩm này? Hành động này không thể hoàn tác.');">Xóa</a>
-                                </td>
-                            </tr>
-                        <?php endwhile; ?>
-                    <?php else: ?>
-                        <tr>
-                            <td colspan="7" style="text-align: center;">Chưa có sản phẩm nào.</td>
-                        </tr>
-                    <?php endif; ?>
+                    <?php foreach($orders as $o): ?>
+                    <tr>
+                        <td><strong>#<?php echo $o['order_id']; ?></strong></td>
+                        <td><?php echo htmlspecialchars($o['customer_name']); ?><br><small><?php echo $o['customer_phone']; ?></small></td>
+                        <td><?php echo number_format($o['total_price'], 0, ',', '.'); ?>đ</td>
+                        <td><?php echo date('d/m/y H:i', strtotime($o['order_date'])); ?></td>
+                        <td>
+                            <form action="" method="GET">
+                                <input type="hidden" name="view" value="orders">
+                                <input type="hidden" name="action" value="update_order_status">
+                                <input type="hidden" name="id" value="<?php echo $o['order_id']; ?>">
+                                <select name="status" class="order-status-select" onchange="this.form.submit()">
+                                    <option value="<?php echo $o['status']; ?>" hidden><?php echo $o['status']; ?></option>
+                                    <option value="Đang xử lý">Đang xử lý</option><option value="Đã xác nhận">Đã xác nhận</option>
+                                    <option value="Đang giao hàng">Đang giao hàng</option><option value="Đã giao hàng">Đã giao hàng</option>
+                                    <option value="Đã hủy">Đã hủy</option>
+                                </select>
+                            </form>
+                        </td>
+                        <td><a href="?view=order_detail&id=<?php echo $o['order_id']; ?>" class="btn-edit" style="background:#0d6efd;color:#fff;"><i class="fas fa-eye"></i> Xem</a></td>
+                    </tr>
+                    <?php endforeach; ?>
                 </tbody>
             </table>
-        </div>
-        
-        <?php elseif ($view == 'add'): ?>
-        <!-- #################### VIEW 2: THÊM SẢN PHẨM #################### -->
-        <div id="add-view">
-            <h2>Thêm sản phẩm mới</h2>
-            <!-- Form này submit về trang hiện tại (index.php?view=add) -->
-            <form action="index.php?view=add" method="POST" enctype="multipart/form-data">
-                
-                <div class="form-grid">
-                    <div class="form-group">
-                        <label for="name">Tên sản phẩm</label>
-                        <input type="text" id="name" name="name" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="price">Giá (ví dụ: 429.000đ)</label>
-                        <input type="text" id="price" name="price" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="sku">Mã sản phẩm (SKU)</label>
-                        <input type="text" id="sku" name="sku">
-                    </div>
-                    <div class="form-group">
-                        <label for="brand">Thương hiệu</label>
-                        <input type="text" id="brand" name="brand">
-                    </div>
-                    <div class="form-group">
-                        <label for="category">Danh mục</label>
-                        <select id="category" name="category">
-                            <option value="SieuXe">Siêu Xe</option>
-                            <option value="F1">Đua F1</option>
-                            <option value="Moto">Mô Tô</option>
-                            <option value="QuanSu">Quân Sự</option>
-                            <option value="Khac">Khác</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="stock">Tình trạng kho</label>
-                        <select id="stock" name="stock">
-                            <option value="Còn hàng">Còn hàng</option>
-                            <option value="Hết hàng">Hết hàng</option>
-                        </select>
-                    </div>
-                </div>
 
-                <div class="form-group">
-                    <label for="img">Ảnh sản phẩm (quan trọng)</label>
-                    <input type="file" id="img" name="img" accept="image/png, image/jpeg, image/jpg" required>
-                </div>
-                <div class="form-group">
-                    <label for="desc">Mô tả (desc)</label>
-                    <textarea id="desc" name="desc" rows="5"></textarea>
+        <?php elseif ($view === 'manage'): ?>
+            <h2>Danh sách Sản phẩm</h2>
+            <table class="product-table">
+                <thead><tr><th>Ảnh</th><th>Tên sản phẩm</th><th>Giá</th><th>Kho</th><th>Hành động</th></tr></thead>
+                <tbody>
+                    <?php foreach($products as $p): ?>
+                    <tr>
+                        <td><img src="../assets/img/<?php echo $p['img']; ?>"></td>
+                        <td><strong><?php echo htmlspecialchars($p['name']); ?></strong><br><small><?php echo $p['category']; ?></small></td>
+                        <td><?php echo $p['price']; ?></td>
+                        <td><?php echo $p['stock']; ?></td>
+                        <td class="action-links">
+                            <a href="edit_product.php?id=<?php echo $p['id']; ?>" class="btn-edit">Sửa</a>
+                            <a href="?view=manage&action=delete_product&id=<?php echo $p['id']; ?>" class="btn-delete" onclick="return confirm('Xóa sản phẩm này?');">Xóa</a>
+                        </td>
+                    </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
+
+        <?php elseif ($view === 'add'): ?>
+            <h2>Thêm Sản Phẩm Mới</h2>
+            <form method="POST" enctype="multipart/form-data">
+                <div class="form-grid">
+                    <div class="form-group"><label>Tên sản phẩm</label><input type="text" name="name" required></div>
+                    <div class="form-group"><label>Giá bán</label><input type="text" name="price" required></div>
+                    <div class="form-group"><label>Mã SKU</label><input type="text" name="sku"></div>
+                    <div class="form-group"><label>Thương hiệu</label><input type="text" name="brand"></div>
+                    <div class="form-group"><label>Danh mục</label>
+                        <select name="category">
+                            <option value="SieuXe">Siêu Xe</option><option value="F1">Đua F1</option>
+                            <option value="Moto">Mô Tô</option><option value="QuanSu">Quân Sự</option><option value="Khac">Khác</option>
+                        </select>
+                    </div>
+                    <div class="form-group"><label>Tình trạng kho</label>
+                        <select name="stock"><option value="Còn hàng">Còn hàng</option><option value="Hết hàng">Hết hàng</option></select>
+                    </div>
                 </div>
                 
                 <div class="form-grid">
-                    <div class="form-group">
-                        <label for="specs">Thông số (specs)</label>
-                        <textarea id="specs" name="specs" rows="3"></textarea>
-                    </div>
-                    <div class="form-group">
-                        <label for="warranty">Bảo hành (warranty)</label>
-                        <textarea id="warranty" name="warranty" rows="3"></textarea>
-                    </div>
+                     <div class="form-group"><label>Thông số kỹ thuật (specs)</label><textarea name="specs"></textarea></div>
+                     <div class="form-group"><label>Thông tin bảo hành (warranty)</label><textarea name="warranty"></textarea></div>
                 </div>
+                <div class="form-group"><label>Đánh giá (VD: 4.5 sao)</label><input type="text" name="reviews"></div>
 
-                <div class="form-group">
-                    <label for="reviews">Đánh giá (reviews) (ví dụ: ★★★★☆ – ...)</label>
-                    <input type="text" id="reviews" name="reviews">
-                </div>
-
-                <div class="form-group">
-                    <button type="submit" name="submit_product">
-                        <i class="fas fa-plus-circle"></i> Thêm Sản Phẩm
-                    </button>
-                </div>
+                <div class="form-group"><label>Ảnh đại diện (Bắt buộc)</label><input type="file" name="img" required></div>
+                <div class="form-group"><label>Mô tả chi tiết</label><textarea name="desc" rows="5"></textarea></div>
+                
+                <div class="form-group"><button type="submit" name="submit_add_product"><i class="fas fa-plus"></i> Thêm sản phẩm</button></div>
             </form>
-        </div>
-        
+
+        <?php elseif ($view === 'users'): ?>
+            <h2>Danh sách Người dùng</h2>
+            <table class="product-table">
+                <thead><tr><th>ID</th><th>Username</th><th>Email</th><th>Vai trò</th><th>Hành động</th></tr></thead>
+                <tbody>
+                    <?php foreach($users as $u): ?>
+                    <tr>
+                        <td><?php echo $u['id']; ?></td>
+                        <td><strong><?php echo htmlspecialchars($u['username']); ?></strong></td>
+                        <td><?php echo htmlspecialchars($u['email']); ?></td>
+                        <td><?php if($u['role']=='admin'): ?><span style="color:#ff9900;font-weight:bold;">Admin</span><?php else: ?>User<?php endif; ?></td>
+                        <td><?php if($u['username'] !== $_SESSION['username']): ?><a href="?view=users&action=delete_user&id=<?php echo $u['id']; ?>" class="btn-delete" onclick="return confirm('Xóa người dùng này?');">Xóa</a><?php else: ?><small>(Bạn)</small><?php endif; ?></td>
+                    </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
+
+        <?php elseif ($view === 'order_detail' && $current_order): ?>
+            <div class="modal">
+                <div class="modal-content">
+                    <span class="close-modal" onclick="window.location.href='?view=orders'">&times;</span>
+                    <h2>Chi tiết đơn hàng #<?php echo $current_order['order_id']; ?></h2>
+                    <div class="order-info-grid">
+                        <div class="info-group">
+                            <h4>Thông tin khách hàng</h4>
+                            <p><strong>Họ tên:</strong> <?php echo htmlspecialchars($current_order['customer_name']); ?></p>
+                            <p><strong>SĐT:</strong> <?php echo htmlspecialchars($current_order['customer_phone']); ?></p>
+                            <p><strong>Địa chỉ:</strong> <?php echo htmlspecialchars($current_order['customer_address']); ?></p>
+                        </div>
+                        <div class="info-group">
+                            <h4>Thông tin đơn hàng</h4>
+                            <p><strong>Ngày đặt:</strong> <?php echo date('d/m/Y H:i', strtotime($current_order['order_date'])); ?></p>
+                            <p><strong>Trạng thái:</strong> <span style="color:#ff9900;font-weight:bold;"><?php echo $current_order['status']; ?></span></p>
+                            <p><strong>Ghi chú:</strong> <?php echo nl2br(htmlspecialchars($current_order['customer_note'])); ?></p>
+                        </div>
+                    </div>
+                    <h4>Sản phẩm đã mua</h4>
+                    <table class="product-table">
+                        <thead><tr><th>Sản phẩm</th><th>Đơn giá</th><th>SL</th><th>Thành tiền</th></tr></thead>
+                        <tbody>
+                            <?php foreach($order_details as $item): ?>
+                            <tr>
+                                <td><?php echo htmlspecialchars($item['product_name']); ?></td>
+                                <td><?php echo number_format($item['product_price'],0,',','.'); ?>đ</td>
+                                <td>x<?php echo $item['quantity']; ?></td>
+                                <td><?php echo number_format($item['product_price']*$item['quantity'],0,',','.'); ?>đ</td>
+                            </tr>
+                            <?php endforeach; ?>
+                            <tr><td colspan="3" style="text-align:right;"><strong>Tổng cộng:</strong></td><td style="color:#ff9900;font-size:1.2rem;"><strong><?php echo number_format($current_order['total_price'],0,',','.'); ?>đ</strong></td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         <?php endif; ?>
-        <!-- Kết thúc Hiển thị nội dung -->
 
     </div>
 </body>
 </html>
-
