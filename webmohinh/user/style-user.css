@@ -1,0 +1,122 @@
+@import url("https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,400;0,500;0,600;1,200;1,400;1,500&display=swap");
+
+/* ---------------- Reset cơ bản ---------------- */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Poppins', sans-serif; 
+}
+
+body {
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    
+    background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), 
+                url('../assets/img/background-xe-dua.jpg'); /* Đổi tên ảnh nếu cần */
+
+    background-size: cover;
+    background-position: center center;
+    background-repeat: no-repeat;
+    background-attachment: fixed; 
+}
+
+/* --- KHUNG CONTAINER (FORM) KIỂU KHÍ ĐỘNG HỌC --- */
+.container {
+    width: 420px; /* Hơi rộng hơn để đủ không gian cho hình nghiêng */
+    background: #2a2a2a; /* Nền xám than */
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5); 
+    overflow: hidden;
+    border: 1px solid #444; 
+    
+    /* TẠO HÌNH DÁNG KHÍ ĐỘNG HỌC */
+    transform: skewX(-10deg); /* Nghiêng toàn bộ form */
+    transform-origin: center center; /* Giữ nguyên tâm khi nghiêng */
+    
+    /* Giữ chữ không bị nghiêng theo */
+    /* Tuy nhiên, các input và button sẽ bị nghiêng */
+}
+
+/* ẨN OVERFLOW KHI NGHIÊNG */
+.container > * {
+    transform: skewX(10deg); /* Nghiêng ngược lại để nội dung thẳng */
+    transform-origin: center center;
+}
+/* --- KẾT THÚC KHÍ ĐỘNG HỌC --- */
+
+
+.header {
+    background: linear-gradient(to right, #ff8c00, #ff6600);
+    padding: 20px;
+    text-align: center;
+    color: #fff; 
+    font-size: 1.5rem;
+    font-weight: bold;
+}
+
+.form {
+    padding: 30px;
+}
+
+.form input[type="text"],
+.form input[type="email"],
+.form input[type="password"] {
+    width: 100%;
+    padding: 12px 15px;
+    margin: 10px 0;
+    border-radius: 8px;
+    background: #1a1a1a;
+    border: 1px solid #555;
+    color: #fff; 
+    outline: none;
+    font-size: 1rem;
+    transition: 0.3s;
+}
+
+.form input::placeholder {
+    color: #777;
+}
+
+.form input:focus {
+    border-color: #ff9900;
+    box-shadow: 0 0 8px rgba(255, 153, 0, 0.5);
+}
+
+.form button {
+    width: 100%;
+    padding: 12px;
+    margin-top: 15px;
+    border: none;
+    border-radius: 8px;
+    background: linear-gradient(to right, #ff8c00, #ff6600);
+    color: #000; 
+    font-size: 1rem;
+    font-weight: 600; 
+    cursor: pointer;
+    transition: all 0.3s ease; 
+}
+
+.form button:hover {
+    background: linear-gradient(to right, #ffac33, #ff8c00);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(255, 153, 0, 0.3);
+}
+
+.form .switch {
+    text-align: center;
+    margin-top: 15px;
+    font-size: 0.9rem;
+    color: #bbb; 
+}
+
+.form .switch a {
+    color: #ff9900; 
+    text-decoration: none;
+}
+
+.form .switch a:hover {
+    text-decoration: underline;
+}
