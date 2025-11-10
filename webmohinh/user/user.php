@@ -300,7 +300,8 @@ hr {
         </div>
     </div>
 
-    <div class="text-center mt-4">
+    <div class="text-center mt-4" style="display: flex; justify-content: center; gap: 15px;">
+        <a href="../index.php" class="btn btn-primary">Về trang chủ</a>
         <a href="logout.php" class="btn btn-secondary">Đăng xuất</a>
     </div>
 </div>

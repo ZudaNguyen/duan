@@ -230,7 +230,7 @@ elseif ($view === 'order_detail' && isset($_GET['id'])) {
                     <div class="form-group"><label>Danh mục</label>
                         <select name="category">
                             <option value="SieuXe">Siêu Xe</option><option value="F1">Đua F1</option>
-                            <option value="Moto">Mô Tô</option><option value="QuanSu">Quân Sự</option><option value="Khac">Khác</option>
+                            <option value="Moto">Mô Tô</option><option value="Khac">Khác</option>
                         </select>
                     </div>
                     <div class="form-group"><label>Tình trạng kho</label>
