@@ -24,10 +24,11 @@ class Product {
     
     /**
      * Lấy TẤT CẢ sản phẩm (cho trang admin)
-     * (Logic lấy từ admin/index.php)
+     * (Đã cập nhật để lấy "stock")
      */
     public function getAll() {
-        $result = $this->conn->query("SELECT id, name, price, sku, category, img FROM products ORDER BY id DESC");
+        // ĐÃ THÊM 'stock' VÀO CÂU LỆNH SELECT
+        $result = $this->conn->query("SELECT id, name, price, sku, category, img, stock FROM products ORDER BY id DESC");
         return $result;
     }
 
@@ -182,7 +183,6 @@ class Product {
         return $stmt_delete->execute();
     }
     
-    // --- PHẦN A (ĐÃ THÊM VÀO ĐÂY) ---
     /**
      * Lấy sản phẩm (có Lọc, Tìm kiếm, Phân trang)
      * (Logic lấy từ index.php)
@@ -247,7 +247,6 @@ class Product {
             'totalPages' => $totalPages
         ];
     }
-    // --- KẾT THÚC PHẦN A ---
     
 }
 ?>

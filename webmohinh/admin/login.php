@@ -38,7 +38,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             $msg = "Tài khoản này không có quyền truy cập Admin!";
         }
     } else {
-        // Phương thức login() trả về false
+        // Phương thức login() trả về false (sai email hoặc mật khẩu)
         $msg = "Sai email hoặc mật khẩu!";
     }
 }
@@ -55,6 +55,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         <div class="header">
             Admin Login
         </div>
+
         <form method="POST" class="form">
             <input type="email" name="email" placeholder="Email Admin" required>
             <input type="password" name="password" placeholder="Mật khẩu Admin" required>

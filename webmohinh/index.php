@@ -41,6 +41,8 @@ $page = $options['page'];
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" 
       integrity="sha512-papH7Y6X7k1Q2Zt2g0a9yqX3sR0kY2oA2J0+Jd2xXz9q9G5b0zFvX6vTnX4FZ6sG/4w6fH0v1u6m3zYcK3v9AQ==" 
       crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 <style>
 </style>
 </head>
@@ -104,7 +106,7 @@ $page = $options['page'];
             <a href="index.php?category=SieuXe#wp-products" class="<?php echo ($category == 'SieuXe') ? 'active' : ''; ?>">Siêu Xe</a>
             <a href="index.php?category=F1#wp-products" class="<?php echo ($category == 'F1') ? 'active' : ''; ?>">Đua F1</a>
             <a href="index.php?category=Moto#wp-products" class="<?php echo ($category == 'Moto') ? 'active' : ''; ?>">Mô Tô</a>
-            <a href="index.php?category=QuanSu#wp-products" class="<?php echo ($category == 'QuanSu') ? 'active' : ''; ?>">Quân Sự</a>
+            <a href="index.php?category=Khác#wp-products" class="<?php echo ($category == 'QuanSu') ? 'active' : ''; ?>">Khác</a>
         </div>
 
         <?php if(!empty($tukhoa)): ?>
@@ -185,12 +187,63 @@ $page = $options['page'];
 <script>
 document.addEventListener("DOMContentLoaded", function() {
     // Code animation (Giữ nguyên)
-    // ...
+    const leftBox = document.querySelector("#saleoff .box-left");
+    const rightBox = document.querySelector("#saleoff .box-right");
+    leftBox.style.opacity = "0";
+    leftBox.style.transform = "translateX(-150px)";
+    rightBox.style.opacity = "0";
+    rightBox.style.transform = "translateX(150px)";
+    const observer = new IntersectionObserver(entries => {
+        entries.forEach(entry => {
+            if(entry.isIntersecting) {
+                leftBox.style.transition = "all 1s ease-out";
+                leftBox.style.opacity = "1";
+                leftBox.style.transform = "translateX(0)";
+                rightBox.style.transition = "all 1s ease-out 0.3s";
+                rightBox.style.opacity = "1";
+                rightBox.style.transform = "translateX(0)";
+            }
+        });
+    }, { threshold: 0.3 });
+    observer.observe(document.querySelector("#saleoff"));
+
     // Code AJAX (Giữ nguyên)
     const allForms = document.querySelectorAll('.form-add-to-cart-index');
+    
     allForms.forEach(form => {
-        // ...
+        form.addEventListener('submit', function(event) {
+            event.preventDefault(); 
+            const formData = new FormData(form);
+            formData.append('add_to_cart', '');
+            const messageDiv = form.querySelector('.add-to-cart-message-index');
+
+            fetch('add_to_cart.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    messageDiv.textContent = data.message;
+                    messageDiv.style.color = 'green';
+                } else {
+                    messageDiv.textContent = data.message;
+                    messageDiv.style.color = 'red';
+                }
+                messageDiv.style.display = 'block';
+                setTimeout(() => {
+                    messageDiv.style.display = 'none';
+                }, 3000);
+            })
+            .catch(error => {
+                console.error('Lỗi:', error);
+                messageDiv.textContent = 'Có lỗi, thử lại.';
+                messageDiv.style.color = 'red';
+                messageDiv.style.display = 'block';
+            });
+        });
     });
+    
 });
 </script>
 </body>

@@ -1,5 +1,6 @@
 <?php
-// Tệp: checkout.php (Đã sửa)
+// Tệp: checkout.php (Đã sửa logic OOP)
+session_start();
 // 1. Nạp các Lớp cần thiết
 include "db/connect.php";      // Nạp kết nối $conn
 include "models/Cart.php";     // Nạp Lớp Cart
@@ -50,7 +51,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['place_order'])) {
     ];
 
     // 9. Gọi phương thức create() của Lớp Order
-    if ($order_handler->create($data)) {
+    if ($order_handler->create($data, $cart)) {
         // Đặt hàng thành công
         
         // 10. Xóa giỏ hàng bằng Lớp Cart
@@ -70,8 +71,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['place_order'])) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Thanh toán</title>
-    <link rel="stylesheet" href="style.css"> 
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css"> <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body class="checkout-page">
     
@@ -79,38 +79,69 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['place_order'])) {
         <h1><i class="fas fa-credit-card"></i> Thanh toán đơn hàng</h1>
 
         <?php if(isset($error_msg)): ?>
-            <div class="checkout-error" style="color: red; ..."><?php echo $error_msg; ?></div>
+            <div class="checkout-error" style="color: red; text-align: center; margin-bottom: 15px;"><?php echo $error_msg; ?></div>
         <?php endif; ?>
 
         <div class="checkout-grid">
             
             <div class="checkout-form">
                 <h2>Thông tin giao hàng</h2>
+                
                 <form method="POST" action="checkout.php">
                     <div class="form-group">
+                        <label for="fullname">Họ và tên</label>
+                        <input type="text" id="fullname" name="fullname" class="form-control" required>
+                    </div>
+                    <div class="form-group">
                         <label for="phone">Số điện thoại</label>
-                        <input type="tel" id="phone" name="phone" ... value="<?php echo htmlspecialchars($user['phone']); ?>" required>
+                        <input type="tel" id="phone" name="phone" class="form-control" value="<?php echo htmlspecialchars($user['phone']); ?>" required>
                     </div>
                     <div class="form-group">
                         <label for="email">Email</label>
-                        <input type="email" id="email" name="email" ... value="<?php echo htmlspecialchars($user['email']); ?>" required>
+                        <input type="email" id="email" name="email" class="form-control" value="<?php echo htmlspecialchars($user['email']); ?>" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="address">Địa chỉ nhận hàng</label>
+                        <input type="text" id="address" name="address" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="note">Ghi chú</label>
+                        <textarea id="note" name="note" class="form-control"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Phương thức thanh toán</label>
+                        <div class="payment-options">
+                            <label class="payment-option">
+                                <input type="radio" name="payment_method" value="cod" checked>
+                                <div class="payment-box"><i class="fas fa-truck"></i><span>Thanh toán khi nhận (COD)</span></div>
+                            </label>
+                            <label class="payment-option">
+                                <input type="radio" name="payment_method" value="online">
+                                <div class="payment-box"><i class="fas fa-credit-card"></i><span>Thanh toán Online</span></div>
+                            </label>
+                        </div>
                     </div>
                     <button type="submit" name="place_order" class="btn-place-order">
                         <i class="fas fa-check"></i> Xác nhận đặt hàng
                     </button>
                 </form>
-            </div>
+                </div>
 
             <div class="order-summary">
                 <h2>Đơn hàng của bạn</h2>
+
                 <?php foreach($cart as $id => $item): ?>
                     <?php
-                    // Logic tính tổng từng dòng vẫn cần ở đây để hiển thị
                     $price_numeric = (int)str_replace(['.', 'đ'], '', $item['price']);
                     $total_item = $price_numeric * $item['quantity'];
                     ?>
                     <div class="summary-item">
+                        <img src="./assets/img/<?php echo htmlspecialchars($item['img']); ?>" alt="<?php echo htmlspecialchars($item['name']); ?>">
+                        <div class="item-info">
+                            <span class="item-name"><?php echo htmlspecialchars($item['name']); ?> (x<?php echo $item['quantity']; ?>)</span>
+                            <span class="item-price"><?php echo number_format($total_item, 0, ',', '.'); ?>đ</span>
                         </div>
+                    </div>
                 <?php endforeach; ?>
                 
                 <hr>
@@ -121,7 +152,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['place_order'])) {
                 <div class="summary-footer">
                     <a href="cart.php"><i class="fas fa-arrow-left"></i> Quay lại giỏ hàng</a>
                 </div>
-            </div>
+                </div>
 
         </div>
     </div>

@@ -64,7 +64,7 @@ $grand_total = $cart_handler->getTotal();
         <?php if (empty($cart)): ?>
             <p class="cart-empty">Giỏ hàng của bạn đang trống. <a href="index.php">Quay lại mua sắm</a></p>
         <?php else: ?>
-            <table class="cart-table">
+          <table class="cart-table">
                 <thead>
                     <tr>
                         <th>Sản phẩm</th>
@@ -78,6 +78,7 @@ $grand_total = $cart_handler->getTotal();
                 <tbody>
                     <?php foreach ($cart as $id => $item): ?>
                         <?php
+                        // Logic này dùng để hiển thị tổng của từng dòng
                         $price_numeric = (int)str_replace(['.', 'đ'], '', $item['price']);
                         $total_item = $price_numeric * $item['quantity'];
                         ?>
@@ -85,16 +86,23 @@ $grand_total = $cart_handler->getTotal();
                             <td><img src="./assets/img/<?php echo htmlspecialchars($item['img']); ?>" alt="<?php echo htmlspecialchars($item['name']); ?>"></td>
                             <td><?php echo htmlspecialchars($item['name']); ?></td>
                             <td><?php echo htmlspecialchars($item['price']); ?></td>
+                            
                             <td>
                                 <form method="POST" action="cart.php" class="form-quantity">
-                                    </form>
+                                    <input type="hidden" name="action" value="update">
+                                    <input type="hidden" name="id" value="<?php echo $id; ?>">
+                                    <input type="number" name="quantity" value="<?php echo htmlspecialchars($item['quantity']); ?>" min="1" class="input-quantity">
+                                    <button type="submit" class="btn-update">Cập nhật</button>
+                                </form>
                             </td>
                             <td><?php echo number_format($total_item, 0, ',', '.'); ?>đ</td>
+
                             <td>
                                 <a href="cart.php?action=remove&id=<?php echo $id; ?>" class="btn-remove">
-                                    </a>
+                                    <i class="fas fa-trash"></i>
+                                </a>
                             </td>
-                        </tr>
+                            </tr>
                     <?php endforeach; ?>
                 </tbody>
             </table>
