@@ -12,7 +12,7 @@ class Order {
     }
 
     /**
-     * Tạo một đơn hàng mới (Đã sửa lỗi)
+     * Tạo một đơn hàng mới (Đã sửa để trả về ID)
      * (Logic lấy từ checkout.php)
      */
     public function create($data, $cart_contents) {
@@ -62,8 +62,13 @@ class Order {
             }
         }
         
-        // Chỉ trả về TRUE nếu cả đơn hàng VÀ chi tiết đều thành công
-        return $details_success; 
+        // 5. TRẢ VỀ MÃ ĐƠN HÀNG NẾU THÀNH CÔNG
+        // (Đây là phần code được thay đổi)
+        if ($details_success) {
+            return $order_id; // Trả về ID thay vì "true"
+        } else {
+            return false; // Trả về "false" nếu lỗi chi tiết
+        }
     }
 
     /**

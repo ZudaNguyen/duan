@@ -36,12 +36,13 @@ $cart = $cart_handler->getContents();
 $grand_total = $cart_handler->getTotal(); // Tính tổng tiền 1 lần
 
 // 8. Xử lý khi người dùng ĐẶT HÀNG
+// 8. Xử lý khi người dùng ĐẶT HÀNG (Đã sửa để chuyển hướng)
 if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['place_order'])) {
     
     // Gộp tất cả dữ liệu vào một mảng $data
     $data = [
         'username'       => $username,
-        'total_price'    => $grand_total, // Dùng tổng tiền đã tính
+        'total_price'    => $grand_total,
         'fullname'       => $_POST['fullname'],
         'address'        => $_POST['address'],
         'phone'          => $_POST['phone'],
@@ -50,19 +51,31 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['place_order'])) {
         'payment_method' => $_POST['payment_method']
     ];
 
-    // 9. Gọi phương thức create() của Lớp Order
-    if ($order_handler->create($data, $cart)) {
-        // Đặt hàng thành công
+    // 9. Gọi phương thức create() và nhận về $order_id
+    $order_id = $order_handler->create($data, $cart);
+
+    if ($order_id) {
+        // Đặt hàng thành công, $order_id là một con số
         
-        // 10. Xóa giỏ hàng bằng Lớp Cart
+        // 10. Xóa giỏ hàng
         $cart_handler->clear();
         
-        header("Location: order_success.php");
+        // 11. KIỂM TRA PHƯƠNG THỨC THANH TOÁN
+        if ($data['payment_method'] == 'cod') {
+            // Nếu là COD, đến trang thành công
+            header("Location: order_success.php");
+        } else {
+            // Nếu là Online, đến trang thanh toán giả
+            header("Location: fake_payment.php?order_id=$order_id&total_price=$grand_total");
+        }
         exit;
+        
     } else {
+        // Hàm create() trả về false (lỗi)
         $error_msg = "Đặt hàng thất bại, vui lòng thử lại.";
     }
-}
+}  
+
 
 ?>
 <!DOCTYPE html>
