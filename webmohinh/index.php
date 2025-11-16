@@ -1,5 +1,5 @@
 <?php
-// Tệp: index.php (Đã sửa)
+// Tệp: index.php (Đã sửa hoàn chỉnh)
 session_start();
 include "db/connect.php"; // Nạp kết nối $conn
 include "models/Product.php"; // Nạp Lớp Product
@@ -8,8 +8,6 @@ $title = "Web bán mô hình xe đua";
 
 // 1. Khởi tạo đối tượng Product
 $product_handler = new Product($conn);
-
-// --- LOGIC MỚI: GỌN GÀNG HƠN ---
 
 // 2. Thu thập các tùy chọn lọc
 $options = [
@@ -29,7 +27,6 @@ $totalPages = $result['totalPages'];
 $tukhoa = $options['tukhoa'];
 $category = $options['category'];
 $page = $options['page'];
-// --- KẾT THÚC LOGIC MỚI ---
 ?>
 <!DOCTYPE html>
 <html lang="vi">
@@ -43,8 +40,6 @@ $page = $options['page'];
       crossorigin="anonymous" referrerpolicy="no-referrer" />
 
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-<style>
-</style>
 </head>
 <body>
 <div id="wrapper">
@@ -73,18 +68,35 @@ $page = $options['page'];
         </div>
 
         <div id="actions">
+            
+            <?php if (isset($_SESSION['role']) && $_SESSION['role'] === 'admin'): ?>
+                <div class="item">
+                    <a href="admin/index.php" title="Trang Quản Trị" style="
+                        text-decoration: none; 
+                        color: #ff9900; 
+                        font-weight: bold; 
+                        border: 2px solid #ff9900; 
+                        padding: 5px 10px; 
+                        border-radius: 20px;
+                        font-size: 0.9em;
+                    ">
+                        Admin
+                    </a>
+                </div>
+            <?php endif; ?>
+            
             <div class="item">
                 <a href="<?php echo isset($_SESSION['username']) ? 'user/user.php' : 'user/login.php'; ?>">
-            <img src="./assets/img/user.jpg" alt="Tài khoản">
-        </a>
-        </div>
+                    <img src="./assets/img/user.jpg" alt="Tài khoản">
+                </a>
+            </div>
             <div class="item">
                    <a href="<?php echo isset($_SESSION['username']) ? 'cart.php' : 'user/login.php'; ?>">
-            <img src="./assets/img/cart.jpg" alt="Giỏ hàng">
-        </a>
-    </div>
-</div>
-    </header>
+                    <img src="./assets/img/cart.jpg" alt="Giỏ hàng">
+                </a>
+            </div>
+        </div>
+        </header>
 
     <section id="banner">
         <div class="box-left">
@@ -106,7 +118,8 @@ $page = $options['page'];
             <a href="index.php?category=SieuXe#wp-products" class="<?php echo ($category == 'SieuXe') ? 'active' : ''; ?>">Siêu Xe</a>
             <a href="index.php?category=F1#wp-products" class="<?php echo ($category == 'F1') ? 'active' : ''; ?>">Đua F1</a>
             <a href="index.php?category=Moto#wp-products" class="<?php echo ($category == 'Moto') ? 'active' : ''; ?>">Mô Tô</a>
-            <a href="index.php?category=Khác#wp-products" class="<?php echo ($category == 'QuanSu') ? 'active' : ''; ?>">Khác</a>
+            <a href="index.php?category=QuanSu#wp-products" class="<?php echo ($category == 'QuanSu') ? 'active' : ''; ?>">Quân Sự</a>
+            <a href="index.php?category=Khac#wp-products" class="<?php echo ($category == 'Khac') ? 'active' : ''; ?>">Khác</a>
         </div>
 
         <?php if(!empty($tukhoa)): ?>

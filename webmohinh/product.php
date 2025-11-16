@@ -64,6 +64,23 @@ $related_products_result = $product_handler->findRelated($current_category, $cur
         </nav>
         
         <div id="actions">
+            
+            <?php if (isset($_SESSION['role']) && $_SESSION['role'] === 'admin'): ?>
+                <div class="item">
+                    <a href="admin/index.php" title="Trang Quản Trị" style="
+                        text-decoration: none; 
+                        color: #ff9900; 
+                        font-weight: bold; 
+                        border: 2px solid #ff9900; 
+                        padding: 5px 10px; 
+                        border-radius: 20px;
+                        font-size: 0.9em;
+                    ">
+                        Admin
+                    </a>
+                </div>
+            <?php endif; ?>
+
             <div class="item">
                 <a href="<?php echo isset($_SESSION['username']) ? 'user/user.php' : 'user/login.php'; ?>">
                     <img src="./assets/img/user.jpg" alt="Tài khoản">
@@ -75,7 +92,7 @@ $related_products_result = $product_handler->findRelated($current_category, $cur
                 </a>
             </div>
         </div>
-    </header>
+        </header>
 
     <section id="product-detail">
         <div class="img-box">

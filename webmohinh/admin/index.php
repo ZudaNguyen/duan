@@ -1,28 +1,28 @@
 <?php
-// Tệp: admin/index.php (Đã sửa toàn bộ bằng OOP)
+// Tệp: admin/index.php (Đã sửa lỗi Session và cú pháp)
 session_start();
-include "../db/connect.php"; // Nạp kết nối $conn
+include "../db/connect.php";     // Nạp kết nối $conn
 include "../models/Product.php"; // Nạp Lớp Product
 include "../models/Order.php";   // Nạp Lớp Order
 include "../models/User.php";    // Nạp Lớp User
 
-// 1. BẢO MẬT (Giữ nguyên)
+// 1. BẢO MẬT
 $is_admin = false;
 if (isset($_SESSION['username']) && isset($_SESSION['role']) && $_SESSION['role'] === 'admin') {
     $is_admin = true;
-    $admin_username = $_SESSION['username'];
+    // Không cần biến $admin_username nếu không dùng
 }
 if (!$is_admin) {
     header("Location: login.php");
     exit();
 }
 
-// 2. KHỞI TẠO CÁC HANDLERS (Đối tượng)
+// 2. KHỞI TẠO CÁC HANDLERS
 $product_handler = new Product($conn);
 $order_handler = new Order($conn);
 $user_handler = new User($conn);
 
-// 3. XỬ LÝ CÁC HÀNH ĐỘNG (ACTIONS) TỪ URL/FORM
+// 3. XỬ LÝ CÁC HÀNH ĐỘNG (ACTIONS)
 $msg = "";
 $error_msg = "";
 $view = isset($_GET['view']) ? $_GET['view'] : 'dashboard'; 
@@ -35,20 +35,19 @@ if ($action === 'delete_product' && isset($_GET['id'])) {
     } else {
         $error_msg = "Lỗi khi xóa sản phẩm.";
     }
-    $view = 'manage'; // Chuyển về trang quản lý
+    $view = 'manage';
 }
 
 // --- ACTION: THÊM SẢN PHẨM MỚI ---
 if (isset($_POST['submit_add_product'])) {
-    // Gọi hàm create() từ Lớp Product
     $result = $product_handler->create($_POST, $_FILES['img']);
     
     if ($result === true) {
         $msg = "Thêm sản phẩm thành công!";
     } else {
-        $error_msg = "Lỗi: " . $result; // $result chứa thông báo lỗi
+        $error_msg = "Lỗi: " . $result;
     }
-    $view = 'add'; // Ở lại trang thêm để tiếp tục
+    $view = 'add';
 }
 
 // --- ACTION: CẬP NHẬT TRẠNG THÁI ĐƠN HÀNG ---
@@ -56,7 +55,6 @@ if ($action === 'update_order_status' && isset($_GET['id']) && isset($_GET['stat
     $order_id = (int)$_GET['id'];
     $new_status = $_GET['status'];
     
-    // Gọi hàm updateStatus() từ Lớp Order
     if ($order_handler->updateStatus($order_id, $new_status)) {
         $msg = "Đã cập nhật đơn hàng #$order_id sang trạng thái: $new_status";
     } else {
@@ -65,13 +63,16 @@ if ($action === 'update_order_status' && isset($_GET['id']) && isset($_GET['stat
     $view = 'orders';
 }
 
-// --- ACTION: XÓA NGƯỜI DÙNG ---
+// --- ACTION: XÓA NGƯỜI DÙNG (Đã sửa lỗi Session) ---
 if ($action === 'delete_user' && isset($_GET['id'])) {
     $uid = (int)$_GET['id'];
-    if ($uid == $_SESSION['user']['id']) { // Không cho tự xóa mình
+    
+    // KIỂM TRA AN TOÀN: Đảm bảo session['user'] tồn tại trước khi kiểm tra ID
+    $current_user_id = isset($_SESSION['user']['id']) ? $_SESSION['user']['id'] : 0;
+
+    if ($uid == $current_user_id) { 
          $error_msg = "Không thể tự xóa chính mình!";
     } else {
-        // Gọi hàm deleteUserById() từ Lớp User
         if ($user_handler->deleteUserById($uid)) {
             $msg = "Đã xóa người dùng!";
         } else {
@@ -81,34 +82,31 @@ if ($action === 'delete_user' && isset($_GET['id'])) {
     $view = 'users';
 }
 
-// ========================================================================
-// 4. LẤY DỮ LIỆU ĐỂ HIỂN THỊ (SỬ DỤNG CÁC LỚP)
-// ========================================================================
-$stats = []; $orders_result = null; $products_result = null; $users_result = null;
-$current_order = null; $order_details_result = null;
+// 4. LẤY DỮ LIỆU HIỂN THỊ
+$stats = []; 
+$orders_result = null; 
+$products_result = null; 
+$users_result = null;
+$current_order = null; 
+$order_details_result = null;
 
 if ($view === 'dashboard') {
-    // Logic thống kê đơn giản, có thể giữ nguyên
     $stats['revenue'] = $conn->query("SELECT SUM(total_price) as t FROM orders WHERE status = 'Đã giao hàng'")->fetch_assoc()['t'] ?? 0;
     $stats['pending'] = $conn->query("SELECT COUNT(*) as c FROM orders WHERE status = 'Đang xử lý'")->fetch_assoc()['c'] ?? 0;
     $stats['users'] = $conn->query("SELECT COUNT(*) as c FROM users")->fetch_assoc()['c'] ?? 0;
     $stats['products'] = $conn->query("SELECT COUNT(*) as c FROM products")->fetch_assoc()['c'] ?? 0;
 }
 elseif ($view === 'orders') {
-    // Dùng Lớp Order
     $orders_result = $order_handler->getAll();
 }
 elseif ($view === 'manage') {
-    // Dùng Lớp Product (Hàm này đã được sửa ở Bước 21)
     $products_result = $product_handler->getAll();
 }
 elseif ($view === 'users') {
-    // Dùng Lớp User
     $users_result = $user_handler->getAll();
 }
 elseif ($view === 'order_detail' && isset($_GET['id'])) {
     $oid = (int)$_GET['id'];
-    // Dùng Lớp Order
     $current_order = $order_handler->findById($oid);
     if ($current_order) {
         $order_details_result = $order_handler->getOrderDetails($oid);
@@ -124,9 +122,14 @@ elseif ($view === 'order_detail' && isset($_GET['id'])) {
     <link rel="stylesheet" href="admin_style.css?v=3"> 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        .modal { /* ... */ }
-        .modal-content { /* ... */ }
-        /* ... */
+        /* CSS Modal đơn giản */
+        .modal { display: block; position: fixed; z-index: 1; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.4); }
+        .modal-content { background-color: #2a2a2a; margin: 5% auto; padding: 20px; border: 1px solid #888; width: 80%; max-width: 900px; border-radius: 10px; position: relative; }
+        .close-modal { color: #aaa; float: right; font-size: 28px; font-weight: bold; cursor: pointer; }
+        .close-modal:hover { color: #fff; }
+        .order-info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
+        .info-group h4 { border-bottom: 1px solid #555; padding-bottom: 10px; margin-top: 0; color: #ff9900; }
+        .info-group p { margin: 5px 0; color: #ddd; }
     </style>
 </head>
 <body>
@@ -139,6 +142,11 @@ elseif ($view === 'order_detail' && isset($_GET['id'])) {
             <a href="?view=manage" class="nav-link <?php echo $view=='manage'?'active':''; ?>"><i class="fas fa-list-alt"></i> Quản lý Sản phẩm</a>
             <a href="?view=add" class="nav-link <?php echo $view=='add'?'active':''; ?>"><i class="fas fa-plus-circle"></i> Thêm Sản phẩm</a>
             <a href="?view=users" class="nav-link <?php echo $view=='users'?'active':''; ?>"><i class="fas fa-users"></i> Quản lý Người dùng</a>
+            
+          <a href="../index.php" class="nav-link" target="_blank">
+                <i class="fas fa-store"></i> Xem Shop
+            </a>
+
             <a href="logout.php" class="back-link" style="margin-left: auto; color: #dc3545;">Đăng xuất <i class="fas fa-sign-out-alt"></i></a>
         </div>
 
@@ -182,7 +190,7 @@ elseif ($view === 'order_detail' && isset($_GET['id'])) {
                         <td><?php echo number_format($o['total_price'], 0, ',', '.'); ?>đ</td>
                         <td><?php echo date('d/m/y H:i', strtotime($o['order_date'])); ?></td>
                         <td>
-                            <form action="" method="GET">
+                            <form action="" method="GET" class="status-form">
                                 <input type="hidden" name="view" value="orders">
                                 <input type="hidden" name="action" value="update_order_status">
                                 <input type="hidden" name="id" value="<?php echo $o['order_id']; ?>">
@@ -210,7 +218,8 @@ elseif ($view === 'order_detail' && isset($_GET['id'])) {
                         <td><img src="../assets/img/<?php echo $p['img']; ?>"></td>
                         <td><strong><?php echo htmlspecialchars($p['name']); ?></strong><br><small><?php echo $p['category']; ?></small></td>
                         <td><?php echo $p['price']; ?></td>
-                        <td><?php echo $p['stock']; ?></td> <td class="action-links">
+                        <td><?php echo $p['stock']; ?></td> 
+                        <td class="action-links">
                             <a href="edit_product.php?id=<?php echo $p['id']; ?>" class="btn-edit">Sửa</a>
                             <a href="?view=manage&action=delete_product&id=<?php echo $p['id']; ?>" class="btn-delete" onclick="return confirm('Xóa sản phẩm này?');">Xóa</a>
                         </td>
@@ -260,8 +269,20 @@ elseif ($view === 'order_detail' && isset($_GET['id'])) {
                         <td><?php echo $u['id']; ?></td>
                         <td><strong><?php echo htmlspecialchars($u['username']); ?></strong></td>
                         <td><?php echo htmlspecialchars($u['email']); ?></td>
-                        <td><?php if($u['role']=='admin'): ?><span style="color:#ff9900;font-weight:bold;">Admin</span><?php else: ?>User<?php endif; ?></td>
-                        <td><?php if($u['username'] !== $_SESSION['username']): ?><a href="?view=users&action=delete_user&id=<?php echo $u['id']; ?>" class="btn-delete" onclick="return confirm('Xóa người dùng này?');">Xóa</a><?php else: ?><small>(Bạn)</small><?php endif; ?></td>
+                        <td>
+                            <?php if($u['role']=='admin'): ?>
+                                <span style="color:#ff9900;font-weight:bold;">Admin</span>
+                            <?php else: ?>
+                                User
+                            <?php endif; ?>
+                        </td>
+                        <td>
+                            <?php if($u['username'] !== $_SESSION['username']): ?>
+                                <a href="?view=users&action=delete_user&id=<?php echo $u['id']; ?>" class="btn-delete" onclick="return confirm('Xóa người dùng này?');">Xóa</a>
+                            <?php else: ?>
+                                <small>(Bạn)</small>
+                            <?php endif; ?>
+                        </td>
                     </tr>
                     <?php endwhile; ?>
                 </tbody>
@@ -298,7 +319,10 @@ elseif ($view === 'order_detail' && isset($_GET['id'])) {
                                 <td><?php echo number_format($item['product_price']*$item['quantity'],0,',','.'); ?>đ</td>
                             </tr>
                             <?php endwhile; ?>
-                            <tr><td colspan="3" style="text-align:right;"><strong>Tổng cộng:</strong></td><td style="color:#ff9900;font-size:1.2rem;"><strong><?php echo number_format($current_order['total_price'],0,',','.'); ?>đ</strong></td></tr>
+                            <tr>
+                                <td colspan="3" style="text-align:right;"><strong>Tổng cộng:</strong></td>
+                                <td style="color:#ff9900;font-size:1.2rem;"><strong><?php echo number_format($current_order['total_price'],0,',','.'); ?>đ</strong></td>
+                            </tr>
                         </tbody>
                     </table>
                 </div>
